@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Anotações', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1>Anotações</h1><p>Ideias rápidas, referências e rascunhos.</p></div>
+        <a class="btn primario" th:href="@{/anotacoes/nova}">＋ Nova anotação</a>
+    </div>
+    <div class="barra-ferramentas">
+        <form class="pesquisa-form" th:action="@{/anotacoes}" method="get">
+            <input type="search" name="q" th:value="${q}" placeholder="Pesquisar…" aria-label="Pesquisar anotações">
+            <input type="hidden" name="visao" th:value="${visao}">
+            <button class="btn" type="submit">Buscar</button>
+        </form>
+        <span class="cresce"></span>
+        <a class="btn pequeno fantasma" th:href="@{/anotacoes(visao='grade')}">Grade</a>
+        <a class="btn pequeno fantasma" th:href="@{/anotacoes(visao='lista')}">Lista</a>
+    </div>
+    <div class="grade" th:if="${visao != 'lista'}">
+        <a class="cartao" th:each="n : ${itens.content}" th:href="@{'/anotacoes/' + ${n.id}}">
+            <h3 th:text="${n.title}">título</h3>
+            <p th:text="${n.category}" th:if="${!#strings.isEmpty(n.category)}">cat</p>
+            <span class="meta"><span th:text="${#temporals.format(n.updatedAt, 'dd/MM/yyyy HH:mm')}">data</span><span th:if="${n.favorite}">★</span></span>
+        </a>
+    </div>
+    <div class="lista-linhas" th:if="${visao == 'lista'}">
+        <a class="linha" th:each="n : ${itens.content}" th:href="@{'/anotacoes/' + ${n.id}}">
+            <span class="cresce titulo" th:text="${n.title}">t</span>
+            <span class="etiqueta fav" th:if="${n.favorite}">★</span>
+            <span class="muted" th:text="${#temporals.format(n.updatedAt, 'dd/MM/yyyy')}">data</span>
+        </a>
+    </div>
+    <div class="vazio" th:if="${itens.empty}">
+        Nenhuma anotação ainda.
+        <br><a class="btn primario" th:href="@{/anotacoes/nova}">Criar a primeira</a>
+    </div>
+    <div class="paginacao" th:if="${itens.totalPages > 1}">
+        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/anotacoes(pagina=${itens.number - 1}, q=${q}, visao=${visao})}">← Anterior</a>
+        <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>
+        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/anotacoes(pagina=${itens.number + 1}, q=${q}, visao=${visao})}">Próxima →</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Configurações', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab"><div><h1>Configurações</h1><p>Conta e segurança.</p></div></div>
+    <div class="detalhe-grade">
+        <section class="painel">
+            <h2>Perfil</h2>
+            <form th:action="@{/configuracoes/perfil}" method="post">
+                <div class="campo">
+                    <label for="displayName">Nome de exibição</label>
+                    <input id="displayName" name="displayName" type="text" th:value="${currentUser.displayName}" maxlength="80">
+                </div>
+                <p class="muted">Usuário: <span th:text="${currentUser.username}">u</span> · E-mail: <span th:text="${currentUser.email}">e</span></p>
+                <button class="btn primario" type="submit">Salvar perfil</button>
+            </form>
+        </section>
+        <section class="painel">
+            <h2>Trocar senha</h2>
+            <form th:action="@{/configuracoes/senha}" method="post">
+                <div class="campo"><label for="atual">Senha atual</label><input id="atual" name="atual" type="password" required autocomplete="current-password"></div>
+                <div class="campo"><label for="nova">Nova senha</label><input id="nova" name="nova" type="password" required minlength="8" autocomplete="new-password"></div>
+                <div class="campo"><label for="confirmacao">Confirmação</label><input id="confirmacao" name="confirmacao" type="password" required autocomplete="new-password"></div>
+                <button class="btn primario" type="submit">Alterar senha</button>
+            </form>
+        </section>
+    </div>
+</div>
+</body>
+</html>

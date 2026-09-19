@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="(${codigo} ?: 'Erro') + ' — Salomão'">Erro — Salomão</title>
+    <link rel="stylesheet" th:href="@{/css/salomao.css}">
+</head>
+<body>
+<div class="auth">
+    <div class="auth-caixa" style="text-align:center">
+        <a class="brand" th:href="@{/dashboard}" style="justify-content:center"><span class="brand-mark">S</span><span class="brand-name">SALOMÃO<small>biblioteca privada</small></span></a>
+        <h1 th:text="${codigo} ?: 'Ops'">500</h1>
+        <p class="sub" th:text="${mensagem} ?: 'Não foi possível concluir a operação. Tente novamente.'">mensagem</p>
+        <p><a class="btn primario" th:href="@{/dashboard}">Voltar ao dashboard</a></p>
+    </div>
+</div>
+</body>
+</html>

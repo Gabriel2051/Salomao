@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:salomaotest;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    open-in-view: false
+  thymeleaf:
+    cache: false
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+salomao:
+  auth-secret: segredo-de-teste-com-ao-menos-32-caracteres-123456
+  app-url: http://localhost:8080
+  rate-limit:
+    max-attempts: 100
+    window-minutes: 10
+logging:
+  level:
+    com.biblioteca.salomao: WARN

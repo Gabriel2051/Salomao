@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='História', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1 th:text="${historia.id == null ? 'Nova história' : historia.title}">História</h1>
+            <p th:if="${historia.id != null}">Digite <b>@</b> para mencionar personagens da sua biblioteca.</p></div>
+        <a class="btn fantasma" th:href="@{/historias}">← Voltar</a>
+    </div>
+    <form th:action="${historia.id == null ? '/historias' : '/historias/' + historia.id}" method="post"
+          th:attr="data-autosave=${historia.id != null ? '/historias/' + historia.id + '/autosave' : null}">
+        <div th:if="${historia.id != null}" style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+            <span class="save-state" data-autosave-estado>✓ Salvo</span>
+            <span style="flex:1"></span>
+            <label class="check"><input type="checkbox" name="favorite" value="true" th:checked="${historia.favorite}"> Favorita</label>
+            <label class="check"><input type="checkbox" name="archived" value="true" th:checked="${historia.archived}"> Arquivada</label>
+        </div>
+        <div class="campo"><label for="title">Título</label>
+            <input id="title" name="title" type="text" th:value="${historia.title}" data-autosave-campo="title" maxlength="220" required></div>
+        <div class="form-linha">
+            <div class="campo"><label for="subtitle">Subtítulo (opcional)</label>
+                <input id="subtitle" name="subtitle" type="text" th:value="${historia.subtitle}" data-autosave-campo="subtitle" maxlength="300"></div>
+            <div class="campo"><label for="status">Status</label>
+                <select id="status" name="status" data-autosave-campo="status">
+                    <option th:each="st : ${historia.id != null ? statusValores : T(com.biblioteca.salomao.domain.Story.Status).values()}"
+                            th:value="${st}" th:text="${st}" th:selected="${historia.status == st}">st</option>
+                </select></div>
+        </div>
+        <div class="campo"><label for="tags">Tags (vírgula)</label>
+            <input id="tags" name="tags" type="text" th:value="${historia.tagsCsv}" data-autosave-campo="tags" maxlength="500"></div>
+        <div class="campo">
+            <label>Conteúdo</label>
+            <div data-editor data-menciona-url="/personagens/api/busca">
+                <div class="editor-barra" role="toolbar" aria-label="Formatação">
+                    <button data-cmd="bold" title="Negrito (Ctrl+B)"><b>B</b></button>
+                    <button data-cmd="italic" title="Itálico (Ctrl+I)"><i>I</i></button>
+                    <button data-cmd="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
+                    <button data-cmd="formatBlock" data-valor="h1" title="Título 1">H1</button>
+                    <button data-cmd="formatBlock" data-valor="h2" title="Título 2">H2</button>
+                    <button data-cmd="formatBlock" data-valor="p" title="Texto normal">¶</button>
+                    <button data-cmd="insertUnorderedList" title="Lista">•≡</button>
+                    <button data-cmd="insertOrderedList" title="Lista numerada">1≡</button>
+                    <button data-cmd="formatBlock" data-valor="blockquote" title="Citação">❝</button>
+                    <button data-cmd="createLink" title="Link">🔗</button>
+                    <button data-cmd="removeFormat" title="Limpar formatação">✕</button>
+                    <button data-cmd="undo" title="Desfazer">↩</button>
+                    <button data-cmd="redo" title="Refazer">↪</button>
+                    <button data-cmd="insertHorizontalRule" title="Separador">―</button>
+                    <button data-cmd="formatBlock" data-valor="pre" title="Código">{ }</button>
+                </div>
+                <div class="editor-area" data-editor-area contenteditable="true" style="min-height:420px" aria-label="Conteúdo da história"></div>
+                <input type="hidden" name="content" data-editor-hidden data-autosave-campo="content" th:value="${historia.content}">
+                <input type="hidden" name="mencoesJson" data-mencoes-ids value="[]">
+            </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn primario" type="submit">Salvar</button>
+        </div>
+    </form>
+    <div style="margin-top:14px" th:if="${historia.id != null}">
+        <div class="painel" th:if="${!historia.mentions.isEmpty()}">
+            <h2>Personagens mencionados</h2>
+            <div class="tokens">
+                <a class="token" th:each="m : ${historia.mentions}" th:href="@{'/personagens/' + ${m.character.id}}" th:text="'@' + ${m.character.fullName}">@nome</a>
+            </div>
+        </div>
+        <form th:action="@{'/historias/' + ${historia.id} + '/excluir'}" method="post" data-confirmar="Excluir esta história? Esta ação não pode ser desfeita.">
+            <button class="btn pequeno perigo" type="submit">Excluir história</button>
+        </form>
+    </div>
+    <script th:src="@{/js/editor.js}" defer></script>
+    <script th:src="@{/js/autosave.js}" defer></script>
+</div>
+</body>
+</html>

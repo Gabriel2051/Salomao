@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo=${p.id == null ? 'Novo personagem' : p.fullName}, conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1 th:text="${p.id == null ? 'Novo personagem' : 'Editar personagem'}">Personagem</h1></div>
+        <a class="btn fantasma" th:href="${p.id == null ? '/personagens' : '/personagens/' + p.id}">← Voltar</a>
+    </div>
+    <form th:action="${p.id == null ? '/personagens' : '/personagens/' + p.id}" method="post" th:object="${p}">
+        <fieldset class="secao"><legend>Informações básicas</legend>
+            <div class="campo"><label for="fullName">Nome completo *</label><input id="fullName" th:field="*{fullName}" type="text" maxlength="160" required></div>
+            <div class="form-linha">
+                <div class="campo"><label for="alias">Nome alternativo</label><input id="alias" th:field="*{alias}" type="text" maxlength="160"></div>
+                <div class="campo"><label for="nickname">Apelido</label><input id="nickname" th:field="*{nickname}" type="text" maxlength="80"></div>
+            </div>
+            <div class="form-linha">
+                <div class="campo"><label for="age">Idade</label><input id="age" th:field="*{age}" type="number" min="0" max="100000"></div>
+                <div class="campo"><label for="birthDate">Nascimento</label><input id="birthDate" th:field="*{birthDate}" type="text" maxlength="40"></div>
+            </div>
+            <div class="form-linha">
+                <div class="campo"><label for="gender">Gênero</label><input id="gender" th:field="*{gender}" type="text" maxlength="40"></div>
+                <div class="campo"><label for="species">Espécie</label><input id="species" th:field="*{species}" type="text" maxlength="80"></div>
+            </div>
+            <div class="form-linha">
+                <div class="campo"><label for="nationality">Nacionalidade</label><input id="nationality" th:field="*{nationality}" type="text" maxlength="80"></div>
+                <div class="campo"><label for="occupation">Ocupação</label><input id="occupation" th:field="*{occupation}" type="text" maxlength="120"></div>
+            </div>
+            <div class="campo"><label for="status">Status</label>
+                <select id="status" th:field="*{status}">
+                    <option value="">—</option>
+                    <option value="Vivo">Vivo</option><option value="Morto">Morto</option><option value="Desaparecido">Desaparecido</option>
+                    <option value="Lendário">Lendário</option><option value="Outro">Outro</option>
+                </select></div>
+        </fieldset>
+
+        <fieldset class="secao"><legend>Aparência</legend>
+            <div class="campo"><label for="physicalDesc">Descrição física</label><textarea id="physicalDesc" th:field="*{physicalDesc}" rows="3"></textarea></div>
+            <div class="form-linha">
+                <div class="campo"><label for="height">Altura</label><input id="height" th:field="*{height}" type="text" maxlength="20"></div>
+                <div class="campo"><label for="weight">Peso</label><input id="weight" th:field="*{weight}" type="text" maxlength="20"></div>
+            </div>
+            <div class="form-linha">
+                <div class="campo"><label for="eyeColor">Olhos</label><input id="eyeColor" th:field="*{eyeColor}" type="text" maxlength="40"></div>
+                <div class="campo"><label for="hairColor">Cabelos</label><input id="hairColor" th:field="*{hairColor}" type="text" maxlength="40"></div>
+            </div>
+            <div class="campo"><label for="specialTraits">Características especiais</label><textarea id="specialTraits" th:field="*{specialTraits}" rows="2"></textarea></div>
+            <div class="campo"><label for="clothing">Vestimentas</label><textarea id="clothing" th:field="*{clothing}" rows="2"></textarea></div>
+            <div class="form-linha">
+                <div class="campo"><label for="marks">Marcas</label><textarea id="marks" th:field="*{marks}" rows="2"></textarea></div>
+                <div class="campo"><label for="scars">Cicatrizes</label><textarea id="scars" th:field="*{scars}" rows="2"></textarea></div>
+            </div>
+            <div class="campo"><label for="otherDetails">Outros detalhes</label><textarea id="otherDetails" th:field="*{otherDetails}" rows="2"></textarea></div>
+        </fieldset>
+
+        <fieldset class="secao"><legend>Personalidade</legend>
+            <div class="campo"><label for="personality">Personalidade</label><textarea id="personality" th:field="*{personality}" rows="3"></textarea></div>
+            <div class="form-linha">
+                <div class="campo"><label for="likes">Gostos</label><textarea id="likes" th:field="*{likes}" rows="2"></textarea></div>
+                <div class="campo"><label for="dislikes">Desgostos</label><textarea id="dislikes" th:field="*{dislikes}" rows="2"></textarea></div>
+            </div>
+            <div class="form-linha">
+                <div class="campo"><label for="fears">Medos</label><textarea id="fears" th:field="*{fears}" rows="2"></textarea></div>
+                <div class="campo"><label for="goals">Objetivos</label><textarea id="goals" th:field="*{goals}" rows="2"></textarea></div>
+            </div>
+            <div class="campo"><label for="motivations">Motivações</label><textarea id="motivations" th:field="*{motivations}" rows="2"></textarea></div>
+            <div class="form-linha">
+                <div class="campo"><label for="weaknesses">Fraquezas</label><textarea id="weaknesses" th:field="*{weaknesses}" rows="2"></textarea></div>
+                <div class="campo"><label for="virtues">Virtudes</label><textarea id="virtues" th:field="*{virtues}" rows="2"></textarea></div>
+            </div>
+            <div class="campo"><label for="flaws">Defeitos</label><textarea id="flaws" th:field="*{flaws}" rows="2"></textarea></div>
+        </fieldset>
+
+        <fieldset class="secao"><legend>História & habilidades</legend>
+            <div class="campo"><label for="backstory">Origem, família, eventos, conflitos</label><textarea id="backstory" th:field="*{backstory}" rows="6"></textarea></div>
+            <div class="campo"><label for="skills">Habilidades (uma por linha)</label><textarea id="skills" th:field="*{skills}" rows="4"></textarea></div>
+            <div class="campo"><label for="tagsCsv">Tags (vírgula)</label><input id="tagsCsv" th:field="*{tagsCsv}" type="text" maxlength="500"></div>
+            <div class="form-linha">
+                <label class="check"><input type="checkbox" th:field="*{favorite}"> Favorito</label>
+                <label class="check"><input type="checkbox" th:field="*{archived}"> Arquivado</label>
+            </div>
+        </fieldset>
+
+        <div style="display:flex;gap:10px">
+            <button class="btn primario" type="submit">Salvar personagem</button>
+            <a class="btn fantasma" th:href="${p.id == null ? '/personagens' : '/personagens/' + p.id}">Cancelar</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

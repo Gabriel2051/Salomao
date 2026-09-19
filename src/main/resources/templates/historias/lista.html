@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Histórias', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1>Histórias</h1><p>Capítulos, contos e crônicas dos seus mundos.</p></div>
+        <a class="btn primario" th:href="@{/historias/nova}">＋ Nova história</a>
+    </div>
+    <div class="barra-ferramentas">
+        <form class="pesquisa-form" th:action="@{/historias}" method="get">
+            <input type="search" name="q" th:value="${q}" placeholder="Pesquisar…" aria-label="Pesquisar histórias">
+            <input type="hidden" name="visao" th:value="${visao}">
+            <button class="btn" type="submit">Buscar</button>
+        </form>
+        <span class="cresce"></span>
+        <a class="btn pequeno fantasma" th:href="@{/historias(visao='grade')}">Grade</a>
+        <a class="btn pequeno fantasma" th:href="@{/historias(visao='lista')}">Lista</a>
+    </div>
+    <div class="grade" th:if="${visao != 'lista'}">
+        <a class="cartao" th:each="s : ${itens.content}" th:href="@{'/historias/' + ${s.id}}">
+            <h3 th:text="${s.title}">título</h3>
+            <p th:text="${s.subtitle}" th:if="${!#strings.isEmpty(s.subtitle)}">sub</p>
+            <span class="meta"><span class="etiqueta" th:text="${s.status}">st</span><span th:text="${#temporals.format(s.updatedAt, 'dd/MM/yyyy')}">data</span></span>
+        </a>
+    </div>
+    <div class="lista-linhas" th:if="${visao == 'lista'}">
+        <a class="linha" th:each="s : ${itens.content}" th:href="@{'/historias/' + ${s.id}}">
+            <span class="cresce titulo" th:text="${s.title}">t</span>
+            <span class="etiqueta" th:text="${s.status}">st</span>
+            <span class="etiqueta fav" th:if="${s.favorite}">★</span>
+        </a>
+    </div>
+    <div class="vazio" th:if="${itens.empty}">Nenhuma história ainda.<br><a class="btn primario" th:href="@{/historias/nova}">Escrever a primeira</a></div>
+    <div class="paginacao" th:if="${itens.totalPages > 1}">
+        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/historias(pagina=${itens.number - 1}, q=${q}, visao=${visao})}">← Anterior</a>
+        <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>
+        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/historias(pagina=${itens.number + 1}, q=${q}, visao=${visao})}">Próxima →</a>
+    </div>
+</div>
+</body>
+</html>

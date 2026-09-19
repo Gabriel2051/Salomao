@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Mapas mentais', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1>Mapas mentais</h1><p>Relacione personagens, poderes, histórias e ideias.</p></div>
+    </div>
+    <section class="painel">
+        <h2>Novo mapa</h2>
+        <form th:action="@{/mapas}" method="post" style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="text" name="title" placeholder="Nome do mapa (ex.: Conflito dos Reinos)" maxlength="160" required style="flex:1;min-width:220px" aria-label="Nome do mapa">
+            <button class="btn primario" type="submit">Criar mapa</button>
+        </form>
+    </section>
+    <div class="grade">
+        <a class="cartao" th:each="m : ${itens.content}" th:href="@{'/mapas/' + ${m.id}}">
+            <h3 th:text="${m.title}">mapa</h3>
+            <p th:text="${m.description}" th:if="${!#strings.isEmpty(m.description)}">desc</p>
+            <span class="meta"><span th:text="${m.nodes.size()} + ' nós'">nós</span><span th:text="${#temporals.format(m.updatedAt, 'dd/MM/yyyy')}">data</span></span>
+        </a>
+    </div>
+    <div class="vazio" th:if="${itens.empty}">Nenhum mapa ainda. Crie o primeiro acima.</div>
+    <div class="paginacao" th:if="${itens.totalPages > 1}">
+        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/mapas(pagina=${itens.number - 1}, q=${q})}">← Anterior</a>
+        <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>
+        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/mapas(pagina=${itens.number + 1}, q=${q})}">Próxima →</a>
+    </div>
+</div>
+</body>
+</html>

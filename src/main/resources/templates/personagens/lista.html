@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Personagens', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1>Personagens</h1><p>O elenco dos seus mundos.</p></div>
+        <a class="btn primario" th:href="@{/personagens/novo}">＋ Novo personagem</a>
+    </div>
+    <div class="barra-ferramentas">
+        <form class="pesquisa-form" th:action="@{/personagens}" method="get">
+            <input type="search" name="q" th:value="${q}" placeholder="Pesquisar…" aria-label="Pesquisar personagens">
+            <input type="hidden" name="visao" th:value="${visao}">
+            <button class="btn" type="submit">Buscar</button>
+        </form>
+        <span class="cresce"></span>
+        <a class="btn pequeno fantasma" th:href="@{/personagens(visao='grade')}">Grade</a>
+        <a class="btn pequeno fantasma" th:href="@{/personagens(visao='lista')}">Lista</a>
+    </div>
+    <div class="grade" th:if="${visao != 'lista'}">
+        <a class="cartao" th:each="c : ${itens.content}" th:href="@{'/personagens/' + ${c.id}}">
+            <h3 th:text="${c.fullName}">nome</h3>
+            <p th:text="${c.occupation}" th:if="${!#strings.isEmpty(c.occupation)}">ocupação</p>
+            <span class="meta">
+                <span class="tokens" th:if="${!c.powers.isEmpty()}">
+                    <span class="token" th:each="p : ${c.powers}" th:text="'✦ ' + ${p.name}">poder</span>
+                </span>
+            </span>
+        </a>
+    </div>
+    <div class="lista-linhas" th:if="${visao == 'lista'}">
+        <a class="linha" th:each="c : ${itens.content}" th:href="@{'/personagens/' + ${c.id}}">
+            <span class="cresce titulo" th:text="${c.fullName}">nome</span>
+            <span class="muted" th:text="${c.species}" th:if="${!#strings.isEmpty(c.species)}">espécie</span>
+            <span class="etiqueta fav" th:if="${c.favorite}">★</span>
+        </a>
+    </div>
+    <div class="vazio" th:if="${itens.empty}">Nenhum personagem ainda.<br><a class="btn primario" th:href="@{/personagens/novo}">Criar o primeiro</a></div>
+    <div class="paginacao" th:if="${itens.totalPages > 1}">
+        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/personagens(pagina=${itens.number - 1}, q=${q}, visao=${visao})}">← Anterior</a>
+        <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>
+        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/personagens(pagina=${itens.number + 1}, q=${q}, visao=${visao})}">Próxima →</a>
+    </div>
+</div>
+</body>
+</html>

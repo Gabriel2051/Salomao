@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Dashboard', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div>
+            <h1 th:text="'Olá, ' + ${currentUser.displayName}">Olá</h1>
+            <p>Sua biblioteca privada — organização, poder e mistério.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a class="btn primario" th:href="@{/personagens/novo}">＋ Personagem</a>
+            <a class="btn" th:href="@{/historias/nova}">＋ História</a>
+            <a class="btn" th:href="@{/anotacoes/nova}">＋ Anotação</a>
+        </div>
+    </div>
+
+    <div class="estatisticas">
+        <a class="estat" th:href="@{/personagens}"><span class="num" th:text="${dash.characters()}">0</span><div class="rot">Personagens</div></a>
+        <a class="estat" th:href="@{/poderes}"><span class="num" th:text="${dash.powers()}">0</span><div class="rot">Poderes</div></a>
+        <a class="estat" th:href="@{/historias}"><span class="num" th:text="${dash.stories()}">0</span><div class="rot">Histórias</div></a>
+        <a class="estat" th:href="@{/anotacoes}"><span class="num" th:text="${dash.notes()}">0</span><div class="rot">Anotações</div></a>
+        <a class="estat" th:href="@{/mapas}"><span class="num" th:text="${dash.maps()}">0</span><div class="rot">Mapas mentais</div></a>
+    </div>
+
+    <div class="detalhe-grade">
+        <section class="painel">
+            <h2>Atividades recentes</h2>
+            <ul class="atividade" th:if="${!dash.activities().isEmpty()}">
+                <li th:each="a : ${dash.activities()}">
+                    <span th:text="${a.description}">ação</span>
+                    <time th:text="${#temporals.format(a.createdAt, 'dd/MM HH:mm')}">agora</time>
+                </li>
+            </ul>
+            <p class="muted" th:if="${dash.activities().isEmpty()}">Nenhuma atividade ainda. Crie seu primeiro personagem ou poder.</p>
+        </section>
+        <section class="painel">
+            <h2>Continuar editando</h2>
+            <div th:if="${!dash.recentStories().isEmpty()}">
+                <p class="muted" style="margin:0 0 6px">Histórias</p>
+                <p th:each="s : ${dash.recentStories()}"><a th:href="@{'/historias/' + ${s.id}}" th:text="${s.title}">história</a></p>
+            </div>
+            <div th:if="${!dash.recentCharacters().isEmpty()}">
+                <p class="muted" style="margin:10px 0 6px">Personagens</p>
+                <p th:each="c : ${dash.recentCharacters()}"><a th:href="@{'/personagens/' + ${c.id}}" th:text="${c.fullName}">personagem</a></p>
+            </div>
+            <div th:if="${!dash.recentNotes().isEmpty()}">
+                <p class="muted" style="margin:10px 0 6px">Anotações</p>
+                <p th:each="n : ${dash.recentNotes()}"><a th:href="@{'/anotacoes/' + ${n.id}}" th:text="${n.title}">anotação</a></p>
+            </div>
+            <p class="muted" th:if="${dash.recentStories().isEmpty() && dash.recentCharacters().isEmpty() && dash.recentNotes().isEmpty()}">Sua biblioteca está vazia — comece acima.</p>
+        </section>
+    </div>
+</div>
+</body>
+</html>

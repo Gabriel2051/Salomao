@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo=${p.fullName}, conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div>
+            <h1 th:text="${p.fullName}">Nome</h1>
+            <p th:text="${p.occupation}" th:if="${!#strings.isEmpty(p.occupation)}">ocupação</p>
+        </div>
+        <div style="display:flex;gap:8px">
+            <a class="btn" th:href="@{'/personagens/' + ${p.id} + '/editar'}">Editar</a>
+            <a class="btn fantasma" th:href="@{/personagens}">← Voltar</a>
+        </div>
+    </div>
+
+    <div class="detalhe-grade">
+        <div>
+            <section class="painel" th:if="${!#strings.isEmpty(p.physicalDesc)}">
+                <h2>Aparência</h2>
+                <div th:utext="${p.physicalDesc}">desc</div>
+                <p class="muted" th:if="${!#strings.isEmpty(p.height) || !#strings.isEmpty(p.weight)}">
+                    <span th:text="${p.height}">a</span> · <span th:text="${p.weight}">p</span>
+                    <span th:if="${!#strings.isEmpty(p.eyeColor)}" th:text="' · olhos ' + ${p.eyeColor}"></span>
+                    <span th:if="${!#strings.isEmpty(p.hairColor)}" th:text="' · cabelos ' + ${p.hairColor}"></span>
+                </p>
+            </section>
+            <section class="painel" th:if="${!#strings.isEmpty(p.personality)}"><h2>Personalidade</h2><div th:utext="${p.personality}">pers</div></section>
+            <section class="painel" th:if="${!#strings.isEmpty(p.backstory)}"><h2>História</h2><div class="conteudo-rico" th:utext="${p.backstory}">hist</div></section>
+            <section class="painel" th:if="${!#strings.isEmpty(p.skills)}"><h2>Habilidades</h2><div th:utext="${p.skills}">hab</div></section>
+            <section class="painel" th:if="${!historiasRelacionadas.isEmpty()}">
+                <h2>Histórias relacionadas</h2>
+                <div class="lista-linhas">
+                    <a class="linha" th:each="s : ${historiasRelacionadas}" th:href="@{'/historias/' + ${s.id}}"><span class="cresce titulo" th:text="${s.title}">h</span></a>
+                </div>
+            </section>
+            <section class="painel" th:if="${!mapasRelacionados.isEmpty()}">
+                <h2>Mapas mentais relacionados</h2>
+                <div class="lista-linhas">
+                    <a class="linha" th:each="m : ${mapasRelacionados}" th:href="@{'/mapas/' + ${m.id}}"><span class="cresce titulo" th:text="${m.title}">m</span></a>
+                </div>
+            </section>
+        </div>
+        <div>
+            <section class="painel">
+                <h2>Poderes</h2>
+                <div class="tokens" th:if="${!p.powers.isEmpty()}">
+                    <span class="token" th:each="pod : ${p.powers}">
+                        <span th:data-poder-id="${pod.id}" th:text="'✦ ' + ${pod.name}" role="button" tabindex="0">poder</span>
+                        <form th:action="@{'/personagens/' + ${p.id} + '/poderes/' + ${pod.id} + '/remover'}" method="post" style="display:inline">
+                            <button type="submit" title="Remover associação" aria-label="Remover poder">×</button>
+                        </form>
+                    </span>
+                </div>
+                <p class="muted" th:if="${p.powers.isEmpty()}">Nenhum poder associado.</p>
+                <form th:action="@{'/personagens/' + ${p.id} + '/poderes'}" method="post" style="margin-top:10px;display:flex;gap:8px">
+                    <select name="poderId" aria-label="Poder para associar" required>
+                        <option value="">Associar poder…</option>
+                        <option th:each="pod : ${poderesDisponiveis}" th:value="${pod.id}" th:text="${pod.name}">p</option>
+                    </select>
+                    <button class="btn pequeno primario" type="submit">＋</button>
+                </form>
+                <p><a class="btn pequeno fantasma" th:href="@{/poderes/novo}">Criar novo poder</a></p>
+            </section>
+            <section class="painel">
+                <h2>Dados</h2>
+                <p class="muted" th:text="'Espécie: ' + ${p.species}" th:if="${!#strings.isEmpty(p.species)}">esp</p>
+                <p class="muted" th:text="'Idade: ' + ${p.age}" th:if="${p.age != null}">idade</p>
+                <p class="muted" th:text="'Status: ' + ${p.status}" th:if="${!#strings.isEmpty(p.status)}">st</p>
+                <div class="tags" th:if="${!#strings.isEmpty(p.tagsCsv)}">
+                    <span class="tag" th:each="t : ${#strings.arraySplit(p.tagsCsv, ',')}" th:text="${t}">tag</span>
+                </div>
+            </section>
+            <form th:action="@{'/personagens/' + ${p.id} + '/excluir'}" method="post" data-confirmar="Excluir este personagem? Serão removidos também seus relacionamentos (poderes associados e menções).">
+                <button class="btn pequeno perigo" type="submit">Excluir personagem</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

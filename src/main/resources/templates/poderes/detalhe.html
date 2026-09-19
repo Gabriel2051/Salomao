@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo=${poder.name}, conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1 th:text="'✦ ' + ${poder.name}">Poder</h1>
+            <p th:if="${!#strings.isEmpty(poder.category) || !#strings.isEmpty(poder.level)}">
+                <span th:text="${poder.category}">cat</span><span th:if="${!#strings.isEmpty(poder.category) && !#strings.isEmpty(poder.level)}"> · </span><span th:text="${poder.level}">nv</span>
+            </p></div>
+        <div style="display:flex;gap:8px">
+            <a class="btn" th:href="@{'/poderes/' + ${poder.id} + '/editar'}">Editar</a>
+            <a class="btn fantasma" th:href="@{/poderes}">← Voltar</a>
+        </div>
+    </div>
+    <div class="detalhe-grade">
+        <div>
+            <section class="painel" th:if="${!#strings.isEmpty(poder.description)}"><h2>Descrição</h2><div th:utext="${poder.description}">d</div></section>
+            <section class="painel" th:if="${!#strings.isEmpty(poder.limitations)}"><h2>Limitações</h2><div th:utext="${poder.limitations}">l</div></section>
+            <section class="painel" th:if="${!#strings.isEmpty(poder.weaknesses)}"><h2>Fraquezas</h2><div th:utext="${poder.weaknesses}">f</div></section>
+            <section class="painel" th:if="${!#strings.isEmpty(poder.origin)}"><h2>Origem</h2><div th:utext="${poder.origin}">o</div></section>
+        </div>
+        <div>
+            <section class="painel">
+                <h2>Personagens com este poder</h2>
+                <div class="tokens" th:if="${!personagens.isEmpty()}">
+                    <a class="token" th:each="c : ${personagens}" th:href="@{'/personagens/' + ${c.id}}" th:text="${c.fullName}">nome</a>
+                </div>
+                <p class="muted" th:if="${personagens.isEmpty()}">Nenhum personagem possui este poder ainda.</p>
+            </section>
+            <form th:action="@{'/poderes/' + ${poder.id} + '/excluir'}" method="post" data-confirmar="Excluir este poder? Ele será removido dos personagens associados.">
+                <button class="btn pequeno perigo" type="submit">Excluir poder</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

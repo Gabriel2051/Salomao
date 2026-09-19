@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="pagina(titulo, conteudo)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title th:text="(${titulo} ?: 'Biblioteca') + ' — Salomão'">Salomão</title>
+    <link rel="stylesheet" th:href="@{/css/salomao.css}">
+</head>
+<body>
+<div class="app">
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir navegação">☰</button>
+    <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+        <a class="brand" th:href="@{/dashboard}" aria-label="Salomão — início">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span class="brand-name">SALOMÃO<small>biblioteca privada</small></span>
+        </a>
+        <nav class="nav">
+            <a th:href="@{/dashboard}" th:classappend="${titulo == 'Dashboard'} ? ' ativo'">◈ Dashboard</a>
+            <p class="nav-grupo">Biblioteca</p>
+            <a th:href="@{/anotacoes}" th:classappend="${titulo == 'Anotações'} ? ' ativo'">✎ Anotações</a>
+            <a th:href="@{/personagens}" th:classappend="${titulo == 'Personagens'} ? ' ativo'">♟ Personagens</a>
+            <a th:href="@{/poderes}" th:classappend="${titulo == 'Poderes'} ? ' ativo'">✦ Poderes</a>
+            <a th:href="@{/historias}" th:classappend="${titulo == 'Histórias'} ? ' ativo'">❧ Histórias</a>
+            <a th:href="@{/mapas}" th:classappend="${titulo == 'Mapas mentais'} ? ' ativo'">⋈ Mapas mentais</a>
+            <p class="nav-grupo">Sistema</p>
+            <a th:href="@{/pesquisa}" th:classappend="${titulo == 'Pesquisa'} ? ' ativo'">⌕ Pesquisa <kbd>Ctrl K</kbd></a>
+            <a th:href="@{/configuracoes}" th:classappend="${titulo == 'Configurações'} ? ' ativo'">⚙ Configurações</a>
+        </nav>
+        <div class="sidebar-rodape">
+            <span class="usuario" th:text="${currentUser != null ? currentUser.displayName : ''}">usuário</span>
+            <form th:action="@{/sair}" method="post"><button class="btn fantasma" type="submit">Sair</button></form>
+        </div>
+    </aside>
+    <div class="conteudo">
+        <header class="topbar">
+            <button class="btn fantasma so-mobile" id="menuBtn2" aria-label="Menu">☰</button>
+            <button class="busca-global" id="buscaGlobal" type="button" aria-label="Pesquisa global">
+                <span>⌕ Pesquisar na biblioteca…</span><kbd>Ctrl K</kbd>
+            </button>
+            <span class="save-state" id="saveState" role="status" aria-live="polite"></span>
+        </header>
+        <main class="principal">
+            <div class="alerta ok" th:if="${sucesso}" th:text="${sucesso}" role="status"></div>
+            <div class="alerta erro" th:if="${erro}" th:text="${erro}" role="alert"></div>
+            <div th:replace="${conteudo}">conteúdo</div>
+        </main>
+    </div>
+</div>
+
+<div class="paleta" id="paleta" hidden>
+    <div class="paleta-caixa" role="dialog" aria-label="Pesquisa global">
+        <input id="paletaInput" type="search" placeholder="Pesquisar personagens, poderes, histórias, anotações, mapas…" autocomplete="off" aria-label="Pesquisar">
+        <ul id="paletaLista" class="paleta-lista"></ul>
+    </div>
+</div>
+
+<div class="modal" id="poderModal" hidden>
+    <div class="modal-caixa" role="dialog" aria-label="Detalhe do poder">
+        <button class="modal-fechar" data-fechar aria-label="Fechar">×</button>
+        <div id="poderModalCorpo"><p class="muted">Carregando…</p></div>
+    </div>
+</div>
+
+<script th:src="@{/js/salomao.js}" defer></script>
+</body>
+</html>

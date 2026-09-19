@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Pesquisa', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab"><div><h1>Pesquisa</h1><p>Busca global em toda a sua biblioteca (atalho <kbd>Ctrl K</kbd>).</p></div></div>
+    <form class="pesquisa-form" th:action="@{/pesquisa}" method="get" style="margin-bottom:18px">
+        <input type="search" name="q" th:value="${q}" placeholder="Pesquisar na biblioteca…" aria-label="Pesquisar" autofocus>
+        <button class="btn primario" type="submit">Pesquisar</button>
+    </form>
+    <div th:if="${resultado}">
+        <section class="painel" th:if="${!resultado.characters().isEmpty()}">
+            <h2>Personagens</h2>
+            <div class="tokens">
+                <a class="token" th:each="c : ${resultado.characters()}" th:href="@{'/personagens/' + ${c.id}}" th:text="${c.fullName}">nome</a>
+            </div>
+        </section>
+        <section class="painel" th:if="${!resultado.powers().isEmpty()}">
+            <h2>Poderes</h2>
+            <div class="tokens">
+                <button type="button" class="token" th:each="p : ${resultado.powers()}" th:data-poder-id="${p.id}" th:text="'✦ ' + ${p.name}">poder</button>
+            </div>
+        </section>
+        <section class="painel" th:if="${!resultado.stories().isEmpty()}">
+            <h2>Histórias</h2>
+            <div class="lista-linhas">
+                <a class="linha" th:each="s : ${resultado.stories()}" th:href="@{'/historias/' + ${s.id}}"><span class="cresce titulo" th:text="${s.title}">t</span><span class="etiqueta" th:text="${s.status}">st</span></a>
+            </div>
+        </section>
+        <section class="painel" th:if="${!resultado.notes().isEmpty()}">
+            <h2>Anotações</h2>
+            <div class="lista-linhas">
+                <a class="linha" th:each="n : ${resultado.notes()}" th:href="@{'/anotacoes/' + ${n.id}}"><span class="cresce titulo" th:text="${n.title}">t</span></a>
+            </div>
+        </section>
+        <section class="painel" th:if="${!resultado.maps().isEmpty()}">
+            <h2>Mapas mentais</h2>
+            <div class="lista-linhas">
+                <a class="linha" th:each="m : ${resultado.maps()}" th:href="@{'/mapas/' + ${m.id}}"><span class="cresce titulo" th:text="${m.title}">t</span></a>
+            </div>
+        </section>
+        <div class="vazio" th:if="${resultado.characters().isEmpty() && resultado.powers().isEmpty() && resultado.stories().isEmpty() && resultado.notes().isEmpty() && resultado.maps().isEmpty()}">
+            Nenhum resultado para “<span th:text="${q}">q</span>”.
+        </div>
+    </div>
+</div>
+</body>
+</html>

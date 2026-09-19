@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar — Salomão</title>
+    <link rel="icon" type="image/svg+xml" href="/images/salomao.svg">
+    <link rel="stylesheet" th:href="@{/css/salomao.css}">
+</head>
+<body>
+<div class="auth">
+    <div class="auth-caixa">
+        <a class="brand" th:href="@{/login}"><span class="brand-mark">S</span><span class="brand-name">SALOMÃO<small>biblioteca privada</small></span></a>
+        <h1>Bem-vindo de volta</h1>
+        <p class="sub">Sua biblioteca de mundos, personagens e histórias.</p>
+        <div class="alerta erro" th:if="${param.erro}" role="alert">Credenciais inválidas. Verifique usuário/e-mail e senha.</div>
+        <div class="alerta erro" th:if="${param.bloqueada}" role="alert">Conta temporariamente bloqueada após várias tentativas. Aguarde 15 minutos.</div>
+        <div class="alerta ok" th:if="${param.criada}" role="status">Conta criada com sucesso. Entre para começar.</div>
+        <div class="alerta ok" th:if="${param.saida}" role="status">Sessão encerrada com segurança.</div>
+        <div class="alerta erro" th:if="${param.expirada}" role="alert">Sua sessão expirou. Entre novamente.</div>
+        <form th:action="@{/login}" method="post">
+            <div class="campo">
+                <label for="login">Usuário ou e-mail</label>
+                <input id="login" name="login" type="text" autocomplete="username" required autofocus>
+            </div>
+            <div class="campo mostra-senha">
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <button type="button" data-mostra-senha="password" aria-label="Mostrar senha">mostrar</button>
+            </div>
+            <button class="btn primario" type="submit">Entrar</button>
+        </form>
+        <p class="auth-alt">Ainda não tem conta? <a th:href="@{/registro}">Criar conta</a></p>
+    </div>
+</div>
+<script th:src="@{/js/salomao.js}" defer></script>
+</body>
+</html>

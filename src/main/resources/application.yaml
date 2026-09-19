@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: salomao
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/salomao}
+    username: ${DATABASE_USER:salomao}
+    password: ${DATABASE_PASSWORD:salomao}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        default_schema: public
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+  messages:
+    basename: messages
+    encoding: UTF-8
+  devtools:
+    restart:
+      enabled: true
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-binding-errors: never
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+        # Em producao, ative secure via APP_SECURE_COOKIE=true (requer HTTPS)
+        secure: ${APP_SECURE_COOKIE:false}
+
+salomao:
+  auth-secret: ${AUTH_SECRET:troque-este-segredo-em-producao-com-ao-menos-32-caracteres}
+  app-url: ${APP_URL:http://localhost:8080}
+  rate-limit:
+    max-attempts: 5
+    window-minutes: 10
+  autosave:
+    debounce-ms: 1500
+
+logging:
+  level:
+    com.biblioteca.salomao: INFO
+    org.springframework.security: WARN
