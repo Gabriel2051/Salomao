@@ -19,6 +19,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private int maxAttempts;
     @Value("${salomao.rate-limit.window-minutes:10}")
     private int windowMinutes;
+    /** So confie em X-Forwarded-For atras de proxy reverso confiavel. */
+    @Value("${salomao.rate-limit.trust-proxy-headers:false}")
+    private boolean trustProxyHeaders;
+    /** Teto do mapa em memoria (anti-DoS por IPs descartaveis). */
+    private static final int MAX_KEYS = 10_000;
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
@@ -29,6 +34,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
         String key = clientIp(req);
         Instant now = Instant.now();
+        // limpeza oportunistica: remove chaves vencidas e impoe teto ao mapa
+        if (attempts.size() > MAX_KEYS || (attempts.size() & 0xFF) == 0) {
+            Instant limite = now.minusSeconds(windowMinutes * 60L);
+            attempts.entrySet().removeIf(e -> {
+                Deque<Instant> d = e.getValue();
+                synchronized (d) {
+                    while (!d.isEmpty() && d.peekFirst().isBefore(limite)) d.pollFirst();
+                    return d.isEmpty();
+                }
+            });
+        }
         Deque<Instant> dq = attempts.computeIfAbsent(key, k -> new ArrayDeque<>());
         synchronized (dq) {
             while (!dq.isEmpty() && dq.peekFirst().isBefore(now.minusSeconds(windowMinutes * 60L))) dq.pollFirst();
@@ -43,8 +59,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(req, res);
     }
     private String clientIp(HttpServletRequest req) {
-        String fwd = req.getHeader("X-Forwarded-For");
-        if (fwd != null && !fwd.isBlank()) return fwd.split(",")[0].trim();
+        if (trustProxyHeaders) {
+            String fwd = req.getHeader("X-Forwarded-For");
+            if (fwd != null && !fwd.isBlank()) return fwd.split(",")[0].trim();
+        }
         return req.getRemoteAddr();
     }
 }

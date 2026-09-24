@@ -15,7 +15,7 @@ import java.util.UUID;
 })
 public class MindMapNode {
 
-    public enum NodeType { TEXTO, PERSONAGEM, PODER, HISTORIA, ANOTACAO, CATEGORIA, LIVRE }
+    public enum NodeType { TEXTO, PERSONAGEM, PODER, HISTORIA, ANOTACAO, CATEGORIA, ITEM, LIVRE }
 
     @Id
     @GeneratedValue

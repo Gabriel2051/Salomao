@@ -104,6 +104,21 @@ class WebSmokeTest {
     }
 
     @Test
+    void paginasDoCatalogoRenderizam() throws Exception {
+        mvc.perform(get("/catalogo")).andExpect(status().isOk());
+        mvc.perform(get("/catalogo/novo")).andExpect(status().isOk());
+        var item = library.saveCatalogItem(uid, null, "Lâmina Prova", "Arma",
+                "resumo", "<p>aparência</p>", "<p>lore</p>", "<p>efeitos</p>",
+                "Aço", "Raro", null, "laminas", false, false);
+        mvc.perform(get("/catalogo/" + item.getId())).andExpect(status().isOk());
+        mvc.perform(get("/catalogo/" + item.getId() + "/editar")).andExpect(status().isOk());
+        // item alheio via web: 404 (nao vaza existencia)
+        mvc.perform(get("/catalogo/" + UUID.randomUUID())).andExpect(status().isNotFound());
+        // autocomplete do catalogo (vinculos)
+        mvc.perform(get("/catalogo/api/busca").param("q", "Lâmina")).andExpect(status().isOk());
+    }
+
+    @Test
     void apisRespeitamIsolamento() throws Exception {
         mvc.perform(get("/api/pesquisa").param("q", "xyznada"))
                 .andExpect(status().isOk())

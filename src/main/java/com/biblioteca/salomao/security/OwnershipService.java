@@ -13,8 +13,9 @@ public class OwnershipService {
     private final PowerRepository powers;
     private final StoryRepository stories;
     private final MentalMapRepository maps;
-    public OwnershipService(NoteRepository n, CharacterRepository c, PowerRepository p, StoryRepository s, MentalMapRepository m) {
-        this.notes = n; this.characters = c; this.powers = p; this.stories = s; this.maps = m;
+    private final CatalogItemRepository catalog;
+    public OwnershipService(NoteRepository n, CharacterRepository c, PowerRepository p, StoryRepository s, MentalMapRepository m, CatalogItemRepository ci) {
+        this.notes = n; this.characters = c; this.powers = p; this.stories = s; this.maps = m; this.catalog = ci;
     }
     @Transactional(readOnly = true)
     public void requireNote(UUID id, UUID uid) {
@@ -35,6 +36,10 @@ public class OwnershipService {
     @Transactional(readOnly = true)
     public void requireMap(UUID id, UUID uid) {
         if (!maps.existsByIdAndUserId(id, uid)) throw notFound("Mapa mental");
+    }
+    @Transactional(readOnly = true)
+    public void requireCatalogItem(UUID id, UUID uid) {
+        if (!catalog.existsByIdAndUserId(id, uid)) throw notFound("Item do catalogo");
     }
     private ResponseStatusException notFound(String what) {
         // 404 proposital: nao revela existencia de recurso alheio

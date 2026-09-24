@@ -5,23 +5,32 @@
 <div th:fragment="conteudo">
     <div class="cab">
         <div><h1 th:text="${mapa.title}">Mapa</h1>
-            <p><span data-autosave-estado>✓ Salvo</span> · duplo-clique no fundo cria um nó · arraste para mover · clique numa aresta para remover</p></div>
+            <p><span data-autosave-estado>✓ Salvo</span> · duplo-clique no fundo cria um nó · duplo-clique num nó vinculado abre o registro</p></div>
         <a class="btn fantasma" th:href="@{/mapas}">← Voltar</a>
     </div>
     <div th:attr="data-autosave='/mapas/' + ${mapa.id} + '/grafo'" data-autosave-coletar="grafo" data-autosave-intervalo="2000">
     <div class="mapa-wrap">
         <div class="mapa-barra">
             <button class="btn pequeno" id="mapaNovoNo" type="button">＋ Nó</button>
-            <button class="btn pequeno fantasma" id="mapaZoomMais" type="button" aria-label="Aproximar">＋ Zoom</button>
-            <button class="btn pequeno fantasma" id="mapaZoomMenos" type="button" aria-label="Afastar">− Zoom</button>
-            <button class="btn pequeno fantasma" id="mapaCentralizar" type="button">Centralizar</button>
-            <span class="muted" style="font-size:12px">Tipos: texto, personagem, poder, história, anotação, categoria, livre</span>
+            <span class="mapa-sep" aria-hidden="true"></span>
+            <button class="btn pequeno fantasma" id="mapaOrganizar" type="button" title="Distribuir os nós em camadas">⭱ Organizar</button>
+            <button class="btn pequeno fantasma" id="mapaCentralizar" type="button" title="Enquadrar todos os nós">⛶ Ajustar</button>
+            <span class="mapa-sep" aria-hidden="true"></span>
+            <button class="btn pequeno fantasma" id="mapaZoomMenos" type="button" aria-label="Afastar">−</button>
+            <span class="mapa-zoom-nivel" id="mapaZoomNivel">100%</span>
+            <button class="btn pequeno fantasma" id="mapaZoomMais" type="button" aria-label="Aproximar">＋</button>
+            <span class="cresce"></span>
+            <span class="muted mapa-dica-rapida">Role para zoom · arraste o fundo para navegar</span>
         </div>
         <svg id="mapaCanvas" th:attr="data-mapa-id=${mapa.id}" viewBox="0 0 1000 560" role="application" aria-label="Editor de mapa mental">
             <defs>
                 <pattern id="grade" width="28" height="28" patternUnits="userSpaceOnUse">
                     <circle cx="1.5" cy="1.5" r="1.5" fill="#222"/>
                 </pattern>
+                <marker id="mapaSeta" viewBox="0 0 10 10" refX="9" refY="5"
+                        markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" class="mapa-seta-preench"/>
+                </marker>
             </defs>
             <rect x="-5000" y="-5000" width="10000" height="10000" fill="url(#grade)" opacity="0.5"/>
             <g id="mapaViewport"><g id="mapaArestas"></g><g id="mapaNos"></g></g>
@@ -30,7 +39,7 @@
     </div>
     <div class="detalhe-grade" style="margin-top:16px">
         <section class="painel">
-            <h2>Nó selecionado</h2>
+            <h2>Seleção</h2>
             <div id="mapaPainel"><p class="muted">Selecione um nó.</p></div>
         </section>
         <section class="painel">
@@ -45,6 +54,10 @@
             </form>
         </section>
     </div>
+    <script th:inline="javascript">
+        /* referências leves (id + nome) para os seletores de vínculo dos nós */
+        window.MAPA_REFS = /*[[${refs}]]*/ {};
+    </script>
     <script th:src="@{/js/mindmap.js}" defer></script>
     <script th:src="@{/js/autosave.js}" defer></script>
 </div>

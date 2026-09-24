@@ -32,16 +32,18 @@ public class LibraryService {
     private final MentalMapRepository maps;
     private final MindMapNodeRepository nodes;
     private final MindMapEdgeRepository edges;
+    private final CatalogItemRepository catalog;
     private final OwnershipService ownership;
     private final ActivityService activity;
 
     public LibraryService(UserRepository users, NoteRepository notes, CharacterRepository characters,
                           PowerRepository powers, StoryRepository stories, StoryMentionRepository mentions,
                           MentalMapRepository maps, MindMapNodeRepository nodes, MindMapEdgeRepository edges,
+                          CatalogItemRepository catalog,
                           OwnershipService ownership, ActivityService activity) {
         this.users = users; this.notes = notes; this.characters = characters; this.powers = powers;
         this.stories = stories; this.mentions = mentions; this.maps = maps; this.nodes = nodes;
-        this.edges = edges; this.ownership = ownership; this.activity = activity;
+        this.edges = edges; this.catalog = catalog; this.ownership = ownership; this.activity = activity;
     }
 
     private User ref(UUID userId) { return users.getReferenceById(userId); }
@@ -64,6 +66,12 @@ public class LibraryService {
         return notes.findByIdAndUserId(id, uid).orElseThrow(() -> nf("Anotação"));
     }
 
+    /** Categorias ja usadas nas anotacoes do usuario (autocompletar do formulario). */
+    @Transactional(readOnly = true)
+    public List<String> noteCategories(UUID uid) {
+        return notes.distinctCategories(uid);
+    }
+
     @Transactional
     public Note saveNote(UUID uid, UUID id, String title, String content, String category,
                          String tags, boolean favorite, boolean archived) {
@@ -81,6 +89,14 @@ public class LibraryService {
         activity.record(uid, id == null ? "CRIOU" : "EDITOU", "NOTE", saved.getId(),
                 (id == null ? "Anotação criada: " : "Anotação atualizada: ") + saved.getTitle());
         return saved;
+    }
+
+    /** Alterna favorito com escrita pontual: sem log de atividade (nao e edicao). */
+    @Transactional
+    public void toggleFavoriteNote(UUID uid, UUID id) {
+        Note n = notes.findByIdAndUserId(id, uid).orElseThrow(() -> nf("Anotação"));
+        n.setFavorite(!n.isFavorite());
+        notes.save(n);
     }
 
     @Transactional
@@ -162,6 +178,9 @@ public class LibraryService {
         // remove mencoes que apontam para ele (integridade)
         mentions.findByCharacterIdAndCharacterUserId(id, uid)
                 .forEach(m -> mentions.delete(m));
+        // itens do catalogo que ele portava ficam sem portador (nao sao excluidos)
+        catalog.findByOwnerIdAndUserIdOrderByNameAsc(id, uid)
+                .forEach(i -> { i.setOwner(null); catalog.save(i); });
         characters.delete(c);
         activity.record(uid, "EXCLUIU", "CHARACTER", null, "Personagem excluído: " + c.getFullName());
     }
@@ -176,7 +195,13 @@ public class LibraryService {
         boolean jaTem = c.getPowers().stream().anyMatch(x -> x.getId() != null && x.getId().equals(powerId));
         if (jaTem) return;
         c.getPowers().add(p);
-        characters.save(c);
+        try {
+            characters.saveAndFlush(c);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Duas requisicoes concorrentes (duplo-clique) passam pela guarda acima;
+            // a violacao de chave unica confirma que a associacao ja existe (idempotente).
+            return;
+        }
         activity.record(uid, "ASSOCIOU", "CHARACTER", c.getId(),
                 "Poder '" + p.getName() + "' associado a " + c.getFullName());
     }
@@ -199,6 +224,12 @@ public class LibraryService {
     @Transactional(readOnly = true)
     public List<Power> allPowers(UUID uid) {
         return powers.findByUserIdOrderByNameAsc(uid);
+    }
+
+    /** Personagens do usuario ordenados por nome (selects de vinculo, ex.: portador de item). */
+    @Transactional(readOnly = true)
+    public List<Character> allCharacters(UUID uid) {
+        return characters.findByUserIdOrderByFullNameAsc(uid);
     }
 
     @Transactional(readOnly = true)
@@ -237,6 +268,80 @@ public class LibraryService {
         Power p = powers.findByIdAndUserId(id, uid).orElseThrow(() -> nf("Poder"));
         powers.delete(p);
         activity.record(uid, "EXCLUIU", "POWER", null, "Poder excluído: " + p.getName());
+    }
+
+    // ==================== CATÁLOGO ====================
+
+    @Transactional(readOnly = true)
+    public Page<CatalogItem> listCatalog(UUID uid, String q, String kind, Boolean archived, Pageable p) {
+        if (q != null && !q.isBlank()) return catalog.search(uid, q.trim(), p);
+        if (kind != null && !kind.isBlank()) return catalog.findByUserIdAndKindIgnoreCase(uid, kind.trim(), p);
+        if (archived != null) return catalog.findByUserIdAndArchived(uid, archived, p);
+        return catalog.findByUserId(uid, p);
+    }
+
+    @Transactional(readOnly = true)
+    public CatalogItem getCatalogItem(UUID uid, UUID id) {
+        CatalogItem i = catalog.findByIdAndUserId(id, uid).orElseThrow(() -> nf("Item"));
+        if (i.getOwner() != null) i.getOwner().getFullName(); // proxy LAZY lido na view
+        return i;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CatalogItem> allCatalogItems(UUID uid) {
+        return catalog.findByUserIdOrderByNameAsc(uid);
+    }
+
+    /** Tipos ja usados pelo usuario (alimenta sugestoes e filtro da lista). */
+    @Transactional(readOnly = true)
+    public List<String> catalogKinds(UUID uid) {
+        return catalog.distinctKinds(uid);
+    }
+
+    /** Itens do catalogo vinculados a um personagem (escopo do dono nos dois lados). */
+    @Transactional(readOnly = true)
+    public List<CatalogItem> itemsOfCharacter(UUID uid, UUID characterId) {
+        ownership.requireCharacter(characterId, uid);
+        return catalog.findByOwnerIdAndUserIdOrderByNameAsc(characterId, uid);
+    }
+
+    @Transactional
+    public CatalogItem saveCatalogItem(UUID uid, UUID id, String name, String kind, String summary,
+                                       String appearance, String lore, String effects, String material,
+                                       String rarity, UUID ownerId, String tags, boolean favorite, boolean archived) {
+        CatalogItem i = (id == null) ? new CatalogItem()
+                : catalog.findByIdAndUserId(id, uid).orElseThrow(() -> nf("Item"));
+        if (i.getUser() == null || i.getUser().getId() == null) i.setUser(ref(uid));
+        i.setName(orUntitled(clip(Sanitizer.textOrEmpty(name), 160)));
+        i.setKind(clip(Sanitizer.textOrEmpty(kind), 60));
+        i.setSummary(clip(Sanitizer.textOrEmpty(summary), 240));
+        i.setAppearance(Sanitizer.richHtml(appearance));
+        i.setLore(Sanitizer.richHtml(lore));
+        i.setEffects(Sanitizer.richHtml(effects));
+        i.setMaterial(clip(Sanitizer.textOrEmpty(material), 160));
+        i.setRarity(clip(Sanitizer.textOrEmpty(rarity), 40));
+        // portador: somente personagem do proprio usuario (mesma regra dos poderes)
+        if (ownerId == null) {
+            i.setOwner(null);
+        } else {
+            Character owner = characters.findByIdAndUserId(ownerId, uid)
+                    .orElseThrow(() -> nf("Personagem"));
+            i.setOwner(owner);
+        }
+        i.setTagsCsv(Sanitizer.tags(tags));
+        i.setFavorite(favorite);
+        i.setArchived(archived);
+        CatalogItem saved = catalog.save(i);
+        activity.record(uid, id == null ? "CRIOU" : "EDITOU", "ITEM", saved.getId(),
+                (id == null ? "Item criado: " : "Item atualizado: ") + saved.getName());
+        return saved;
+    }
+
+    @Transactional
+    public void deleteCatalogItem(UUID uid, UUID id) {
+        CatalogItem i = catalog.findByIdAndUserId(id, uid).orElseThrow(() -> nf("Item"));
+        catalog.delete(i);
+        activity.record(uid, "EXCLUIU", "ITEM", null, "Item excluído: " + i.getName());
     }
 
     // ==================== HISTÓRIAS ====================
@@ -402,6 +507,7 @@ public class LibraryService {
                         case "POWER" -> powers.existsByIdAndUserId(d.refId(), uid);
                         case "STORY" -> stories.existsByIdAndUserId(d.refId(), uid);
                         case "NOTE" -> notes.existsByIdAndUserId(d.refId(), uid);
+                        case "ITEM" -> catalog.existsByIdAndUserId(d.refId(), uid);
                         default -> false;
                     };
                     if (!ok) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -461,37 +567,62 @@ public class LibraryService {
 
     @Transactional(readOnly = true)
     public Dashboard dashboard(UUID uid) {
+        List<Character> recent = characters.findTop10ByUserIdOrderByUpdatedAtDesc(uid);
+        // a view itera c.powers fora da transacao (open-in-view=false): inicializa aqui
+        recent.forEach(c -> c.getPowers().size());
         return new Dashboard(
                 characters.countByUserId(uid),
                 powers.countByUserId(uid),
                 stories.countByUserId(uid),
                 notes.countByUserId(uid),
                 maps.countByUserId(uid),
-                characters.findTop10ByUserIdOrderByUpdatedAtDesc(uid),
+                catalog.countByUserId(uid),
+                recent,
                 stories.findTop10ByUserIdOrderByUpdatedAtDesc(uid),
                 notes.findTop10ByUserIdOrderByUpdatedAtDesc(uid),
                 activity.recent(uid));
     }
 
-    public record Dashboard(long characters, long powers, long stories, long notes, long maps,
+    public record Dashboard(long characters, long powers, long stories, long notes, long maps, long items,
                             List<Character> recentCharacters, List<Story> recentStories,
                             List<Note> recentNotes, List<ActivityLog> activities) {}
 
     @Transactional(readOnly = true)
     public SearchResult globalSearch(UUID uid, String q) {
         String term = q == null ? "" : q.trim();
-        if (term.length() < 2) return new SearchResult(List.of(), List.of(), List.of(), List.of(), List.of());
+        if (term.length() < 2) return new SearchResult(List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
         Pageable top = org.springframework.data.domain.PageRequest.of(0, 6);
         return new SearchResult(
                 characters.search(uid, term, top).getContent(),
                 powers.search(uid, term, top).getContent(),
                 stories.search(uid, term, top).getContent(),
                 notes.search(uid, term, top).getContent(),
-                maps.search(uid, term, top).getContent());
+                maps.search(uid, term, top).getContent(),
+                catalog.search(uid, term, top).getContent());
     }
 
     public record SearchResult(List<Character> characters, List<Power> powers, List<Story> stories,
-                               List<Note> notes, List<MentalMap> maps) {}
+                               List<Note> notes, List<MentalMap> maps, List<CatalogItem> items) {}
+
+    /** Opcoes leves (id + nome) para os seletores de vinculo do mapa mental. */
+    public record MapRef(UUID id, String nome) {}
+    public record MapRefs(List<MapRef> characters, List<MapRef> powers, List<MapRef> stories,
+                          List<MapRef> notes, List<MapRef> items) {}
+
+    @Transactional(readOnly = true)
+    public MapRefs mapRefs(UUID uid) {
+        return new MapRefs(
+                characters.findByUserIdOrderByFullNameAsc(uid).stream()
+                        .map(c -> new MapRef(c.getId(), c.getFullName())).toList(),
+                powers.findByUserIdOrderByNameAsc(uid).stream()
+                        .map(p -> new MapRef(p.getId(), p.getName())).toList(),
+                stories.findTop10ByUserIdOrderByUpdatedAtDesc(uid).stream()
+                        .map(s -> new MapRef(s.getId(), s.getTitle())).toList(),
+                notes.findTop10ByUserIdOrderByUpdatedAtDesc(uid).stream()
+                        .map(n -> new MapRef(n.getId(), n.getTitle())).toList(),
+                catalog.findByUserIdOrderByNameAsc(uid).stream()
+                        .map(i -> new MapRef(i.getId(), i.getName())).toList());
+    }
 
     // ==================== helpers ====================
 

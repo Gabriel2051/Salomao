@@ -7,27 +7,29 @@
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title th:text="(${titulo} ?: 'Biblioteca') + ' — Salomão'">Salomão</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/salomao.svg}">
     <link rel="stylesheet" th:href="@{/css/salomao.css}">
 </head>
 <body>
 <div class="app">
-    <button class="menu-btn" id="menuBtn" aria-label="Abrir navegação">☰</button>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir navegação" aria-expanded="false" aria-controls="sidebar">☰</button>
     <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
         <a class="brand" th:href="@{/dashboard}" aria-label="Salomão — início">
             <span class="brand-mark" aria-hidden="true">S</span>
             <span class="brand-name">SALOMÃO<small>biblioteca privada</small></span>
         </a>
         <nav class="nav">
-            <a th:href="@{/dashboard}" th:classappend="${titulo == 'Dashboard'} ? ' ativo'">◈ Dashboard</a>
+            <a th:href="@{/dashboard}">◈ Dashboard</a>
             <p class="nav-grupo">Biblioteca</p>
-            <a th:href="@{/anotacoes}" th:classappend="${titulo == 'Anotações'} ? ' ativo'">✎ Anotações</a>
-            <a th:href="@{/personagens}" th:classappend="${titulo == 'Personagens'} ? ' ativo'">♟ Personagens</a>
-            <a th:href="@{/poderes}" th:classappend="${titulo == 'Poderes'} ? ' ativo'">✦ Poderes</a>
-            <a th:href="@{/historias}" th:classappend="${titulo == 'Histórias'} ? ' ativo'">❧ Histórias</a>
-            <a th:href="@{/mapas}" th:classappend="${titulo == 'Mapas mentais'} ? ' ativo'">⋈ Mapas mentais</a>
+            <a th:href="@{/anotacoes}">✎ Anotações</a>
+            <a th:href="@{/personagens}">♟ Personagens</a>
+            <a th:href="@{/poderes}">✦ Poderes</a>
+            <a th:href="@{/catalogo}">❖ Catálogo</a>
+            <a th:href="@{/historias}">❧ Histórias</a>
+            <a th:href="@{/mapas}">⋈ Mapas mentais</a>
             <p class="nav-grupo">Sistema</p>
-            <a th:href="@{/pesquisa}" th:classappend="${titulo == 'Pesquisa'} ? ' ativo'">⌕ Pesquisa <kbd>Ctrl K</kbd></a>
-            <a th:href="@{/configuracoes}" th:classappend="${titulo == 'Configurações'} ? ' ativo'">⚙ Configurações</a>
+            <a th:href="@{/pesquisa}">⌕ Pesquisa <kbd>Ctrl K</kbd></a>
+            <a th:href="@{/configuracoes}">⚙ Configurações</a>
         </nav>
         <div class="sidebar-rodape">
             <span class="usuario" th:text="${currentUser != null ? currentUser.displayName : ''}">usuário</span>
@@ -36,7 +38,7 @@
     </aside>
     <div class="conteudo">
         <header class="topbar">
-            <button class="btn fantasma so-mobile" id="menuBtn2" aria-label="Menu">☰</button>
+            <button class="btn fantasma so-mobile" id="menuBtn2" aria-label="Menu" aria-expanded="false" aria-controls="sidebar">☰</button>
             <button class="busca-global" id="buscaGlobal" type="button" aria-label="Pesquisa global">
                 <span>⌕ Pesquisar na biblioteca…</span><kbd>Ctrl K</kbd>
             </button>
@@ -51,14 +53,14 @@
 </div>
 
 <div class="paleta" id="paleta" hidden>
-    <div class="paleta-caixa" role="dialog" aria-label="Pesquisa global">
+    <div class="paleta-caixa" role="dialog" aria-modal="true" aria-label="Pesquisa global">
         <input id="paletaInput" type="search" placeholder="Pesquisar personagens, poderes, histórias, anotações, mapas…" autocomplete="off" aria-label="Pesquisar">
         <ul id="paletaLista" class="paleta-lista"></ul>
     </div>
 </div>
 
 <div class="modal" id="poderModal" hidden>
-    <div class="modal-caixa" role="dialog" aria-label="Detalhe do poder">
+    <div class="modal-caixa" role="dialog" aria-modal="true" aria-label="Detalhe do poder">
         <button class="modal-fechar" data-fechar aria-label="Fechar">×</button>
         <div id="poderModalCorpo"><p class="muted">Carregando…</p></div>
     </div>

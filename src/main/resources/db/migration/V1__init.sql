@@ -128,6 +128,30 @@ CREATE TABLE IF NOT EXISTS story_character_mentions (
     CONSTRAINT uq_story_character UNIQUE (story_id, character_id)
 );
 
+CREATE TABLE IF NOT EXISTS catalog_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id UUID REFERENCES characters(id) ON DELETE SET NULL,
+    name VARCHAR(160) NOT NULL DEFAULT '',
+    kind VARCHAR(60) NOT NULL DEFAULT '',
+    summary VARCHAR(240) NOT NULL DEFAULT '',
+    appearance TEXT NOT NULL DEFAULT '',
+    lore TEXT NOT NULL DEFAULT '',
+    effects TEXT NOT NULL DEFAULT '',
+    material VARCHAR(160) NOT NULL DEFAULT '',
+    rarity VARCHAR(40) NOT NULL DEFAULT '',
+    tags_csv VARCHAR(500) NOT NULL DEFAULT '',
+    favorite BOOLEAN NOT NULL DEFAULT FALSE,
+    archived BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_catalog_user ON catalog_items (user_id);
+CREATE INDEX IF NOT EXISTS idx_catalog_user_updated ON catalog_items (user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_catalog_user_kind ON catalog_items (user_id, kind);
+CREATE INDEX IF NOT EXISTS idx_catalog_user_name ON catalog_items (user_id, name);
+
 CREATE TABLE IF NOT EXISTS mental_maps (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -143,10 +167,10 @@ CREATE TABLE IF NOT EXISTS mental_map_nodes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     map_id UUID NOT NULL REFERENCES mental_maps(id) ON DELETE CASCADE,
     node_type VARCHAR(20) NOT NULL DEFAULT 'TEXTO'
-        CHECK (node_type IN ('TEXTO','PERSONAGEM','PODER','HISTORIA','ANOTACAO','CATEGORIA','LIVRE')),
+        CHECK (node_type IN ('TEXTO','PERSONAGEM','PODER','HISTORIA','ANOTACAO','CATEGORIA','ITEM','LIVRE')),
     label VARCHAR(200) NOT NULL DEFAULT '',
     content TEXT NOT NULL DEFAULT '',
-    ref_type VARCHAR(20) CHECK (ref_type IS NULL OR ref_type IN ('CHARACTER','POWER','STORY','NOTE')),
+    ref_type VARCHAR(20) CHECK (ref_type IS NULL OR ref_type IN ('CHARACTER','POWER','STORY','NOTE','ITEM')),
     ref_id UUID,
     pos_x DOUBLE PRECISION NOT NULL DEFAULT 0,
     pos_y DOUBLE PRECISION NOT NULL DEFAULT 0,

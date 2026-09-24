@@ -58,6 +58,12 @@ public class DevSeedConfig {
                     "RASCUNHO", false, false, List.of(arthur.getId()));
             library.saveNote(uid, null, "Ideias para capítulo 4",
                     "<p>O mapa revela a passagem secreta.</p>", "Roteiro", "cap4,ideias", false, false);
+            library.saveCatalogItem(uid, null, "Lâmina do Crepúsculo", "Arma",
+                    "Espada longa de aço-negro forjada na queda do Reino Cinzento.",
+                    "<p>Lâmina escura com veios avermelhados que brilham perto do fogo.</p>",
+                    "<p>Forjada por Mestra Sabel durante a Queda; passou de mão em mão até Arthur.</p>",
+                    "<p>Corta encantamentos menores; amplifica chamas de quem a empunha.</p>",
+                    "Aço-negro", "Lendário", arthur.getId(), "arma,lendária", true, false);
             MentalMap mapa = library.saveMap(uid, null, "Conflito dos Reinos", "Visão geral da campanha");
             var n1 = new LibraryService.NodeDto(UUID.randomUUID(), "CATEGORIA", "MUNDO", "", null, null, 100, 100, "", false);
             var n2 = new LibraryService.NodeDto(UUID.randomUUID(), "PERSONAGEM", "Arthur Black", "", "CHARACTER", arthur.getId(), 320, 220, "", false);

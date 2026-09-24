@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Editor rico unificado do Salomão.
+  Parâmetros:
+    campo       — name do input oculto que recebe o HTML sanitizado (ex.: content)
+    valor       — HTML inicial
+    rotulo      — aria-label da área de edição
+    altura      — min-height da área (ex.: 420px)
+    mencionaUrl — URL do autocomplete de menções @ (vazio/ausente desativa)
+  Uso:
+    <div th:replace="~{fragments/editor :: rico('content', ${historia.content}, 'Conteúdo', '420px', '/personagens/api/busca')}"></div>
+-->
+<div th:fragment="rico(campo,valor,rotulo,altura,mencionaUrl,mencoesIds)" class="editor" data-editor
+     th:attr="data-menciona-url=${mencionaUrl}">
+    <div class="editor-barra" role="toolbar" aria-label="Formatação do texto">
+        <span class="ed-grupo">
+            <select class="ed-select" data-bloco title="Estilo do parágrafo" aria-label="Estilo do parágrafo">
+                <option value="p">Parágrafo</option>
+                <option value="h1">Título 1</option>
+                <option value="h2">Título 2</option>
+                <option value="h3">Título 3</option>
+                <option value="blockquote">Citação</option>
+                <option value="pre">Código</option>
+            </select>
+        </span>
+        <span class="ed-grupo">
+            <select class="ed-select" data-fonte title="Fonte do texto" aria-label="Fonte do texto">
+                <option value="">Fonte padrão</option>
+                <option value="ff-serie">Serifada (livro)</option>
+                <option value="ff-sans">Sem serifa</option>
+                <option value="ff-mono">Monoespaçada</option>
+                <option value="ff-manuscrita">Humanística</option>
+            </select>
+        </span>
+        <span class="ed-grupo">
+            <select class="ed-select" data-tamanho title="Tamanho do texto" aria-label="Tamanho do texto">
+                <option value="">Tamanho padrão</option>
+                <option value="fs-p">Pequeno</option>
+                <option value="fs-g">Grande</option>
+                <option value="fs-xg">Maior</option>
+            </select>
+        </span>
+        <span class="ed-sep" aria-hidden="true"></span>
+        <span class="ed-grupo">
+            <button type="button" data-cmd="bold" title="Negrito (Ctrl+B)" aria-label="Negrito"><b>B</b></button>
+            <button type="button" data-cmd="italic" title="Itálico (Ctrl+I)" aria-label="Itálico"><i>I</i></button>
+            <button type="button" data-cmd="underline" title="Sublinhado (Ctrl+U)" aria-label="Sublinhado"><u>U</u></button>
+            <button type="button" data-cmd="strikeThrough" title="Tachado" aria-label="Tachado"><s>S</s></button>
+        </span>
+        <span class="ed-grupo">
+            <button type="button" data-marcar title="Realce" aria-label="Realce"><mark>ab</mark></button>
+            <button type="button" data-cmd="subscript" title="Subscrito" aria-label="Subscrito">x₂</button>
+            <button type="button" data-cmd="superscript" title="Sobrescrito" aria-label="Sobrescrito">x²</button>
+        </span>
+        <span class="ed-sep" aria-hidden="true"></span>
+        <span class="ed-grupo">
+            <button type="button" data-cmd="insertUnorderedList" title="Lista com marcadores" aria-label="Lista">•≡</button>
+            <button type="button" data-cmd="insertOrderedList" title="Lista numerada" aria-label="Lista numerada">1≡</button>
+            <button type="button" data-cmd="formatBlock" data-valor="blockquote" title="Citação em bloco" aria-label="Citação">❝</button>
+        </span>
+        <span class="ed-grupo">
+            <button type="button" data-cmd="createLink" title="Inserir link" aria-label="Link">🔗</button>
+            <button type="button" data-cmd="insertHorizontalRule" title="Separador" aria-label="Separador">―</button>
+            <button type="button" data-cmd="removeFormat" title="Limpar formatação" aria-label="Limpar formatação">⌫</button>
+        </span>
+        <span class="ed-sep" aria-hidden="true"></span>
+        <span class="ed-grupo">
+            <button type="button" data-cmd="undo" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↩</button>
+            <button type="button" data-cmd="redo" title="Refazer (Ctrl+Y)" aria-label="Refazer">↪</button>
+        </span>
+        <span class="ed-grupo ed-direita">
+            <button type="button" data-expandir title="Modo foco (tela cheia)" aria-label="Modo foco">⛶</button>
+        </span>
+    </div>
+    <div class="editor-area" data-editor-area contenteditable="true"
+         th:style="'min-height:' + ${altura}" th:attr="aria-label=${rotulo}"></div>
+    <div class="editor-rodape">
+        <span class="muted" data-contador>0 palavras</span>
+        <span class="muted editor-dica" th:if="${mencionaUrl != null and mencionaUrl != ''}">Digite <b>@</b> para mencionar personagens</span>
+    </div>
+    <input type="hidden" th:name="${campo}" data-editor-hidden th:attr="data-autosave-campo=${campo}" th:value="${valor}">
+    <input th:if="${mencionaUrl != null and mencionaUrl != ''}" type="hidden" name="mencoesIds"
+           data-mencoes-ids th:value="${mencoesIds}">
+</div>
+</body>
+</html>

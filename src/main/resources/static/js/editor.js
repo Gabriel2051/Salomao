@@ -1,5 +1,6 @@
-/* SALOMÃO — editor rico: toolbar (negrito/itálico/sublinhado/títulos/listas/citação/link)
-   + menções @Personagem com autocomplete + sincronização para input hidden. */
+/* SALOMÃO — editor rico v2: blocos (títulos/citação/código), fontes e tamanhos,
+   realce, tachado, sub/sup, lista, link, separador, modo foco e contador de
+   palavras. Menções @Personagem com autocomplete. Tudo sanitizado no servidor. */
 (function () {
   "use strict";
 
@@ -10,7 +11,35 @@
     if (!area || !hidden) return;
     area.innerHTML = hidden.value || "";
 
-    // aplica estado inicial dos botões
+    function sync() {
+      hidden.value = area.innerHTML;
+      contar();
+      // bubbles: o listener de autosave fica no <form data-autosave> (ancestral)
+      root.dispatchEvent(new CustomEvent("editor:change", { bubbles: true }));
+    }
+
+    // ---------- preservação da seleção ----------
+    // Botões de toolbar nunca roubam o foco do texto (mousedown preventDefault);
+    // selects roubam — então o último range válido é memorizado e restaurado.
+    var ultimaRange = null;
+    document.addEventListener("selectionchange", function () {
+      var sel = window.getSelection();
+      if (sel.rangeCount && area.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+        ultimaRange = sel.getRangeAt(0).cloneRange();
+        atualizarBotoes();
+      }
+    });
+    function restaurarSelecao() {
+      if (!ultimaRange) { area.focus(); return; }
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(ultimaRange);
+    }
+    root.querySelectorAll(".editor-barra button").forEach(function (b) {
+      b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+    });
+
+    // ---------- comandos nativos (bold, italic, listas…) ----------
     root.querySelectorAll("[data-cmd]").forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
@@ -20,8 +49,17 @@
         if (cmd === "createLink") {
           var url = window.prompt("URL do link (https://…):", "https://");
           if (!url) return;
+          url = url.trim();
+          // bloqueia esquemas perigosos (javascript:, data:…) antes de inserir
+          if (!/^(https?:\/\/|mailto:)/i.test(url)) {
+            window.alert("Use apenas links http://, https:// ou mailto:.");
+            return;
+          }
           document.execCommand("createLink", false, url);
-        } else if (cmd === "insertUnorderedList" || cmd === "insertOrderedList") {
+        } else if (cmd === "subscript" || cmd === "superscript") {
+          // um exclui o outro: ligar sub desliga sup e vice-versa
+          var outro = cmd === "subscript" ? "superscript" : "subscript";
+          try { if (document.queryCommandState(outro)) document.execCommand(outro, false, null); } catch (err) {}
           document.execCommand(cmd, false, null);
         } else {
           document.execCommand(cmd, false, val);
@@ -30,6 +68,86 @@
         atualizarBotoes();
       });
     });
+
+    // ---------- select de bloco (P / H1 / H2 / citação / código) ----------
+    var selBloco = root.querySelector("[data-bloco]");
+    if (selBloco) selBloco.addEventListener("change", function () {
+      restaurarSelecao();
+      document.execCommand("formatBlock", false, selBloco.value);
+      selBloco.value = "p";
+      sync();
+    });
+
+    // ---------- fonte, tamanho e cor via classes (span.ff-*/fs-*) ----------
+    function familia(el, prefixo) {
+      Array.prototype.slice.call(el.classList).forEach(function (c) {
+        if (c.indexOf(prefixo) === 0) el.classList.remove(c);
+      });
+    }
+    function desembrulhar(el) {
+      var pai = el.parentNode;
+      while (el.firstChild) pai.insertBefore(el.firstChild, el);
+      pai.removeChild(el);
+    }
+    // envolve a seleção em <tag class>; se ela já estiver dentro de um elemento
+    // dessa família, apenas troca a classe (não aninha spans desnecessariamente)
+    function envolver(tag, classe, prefixo) {
+      restaurarSelecao();
+      var sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      var range = sel.getRangeAt(0);
+      if (range.collapsed || !area.contains(range.commonAncestorContainer)) return;
+      var el = range.commonAncestorContainer.nodeType === 1
+        ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+      var alvo = el && el.closest ? el.closest(tag) : null;
+      if (alvo && area.contains(alvo) && alvo !== area
+          && alvo.contains(range.startContainer) && alvo.contains(range.endContainer)) {
+        if (tag === "mark") { desembrulhar(alvo); sync(); return; }
+        if (prefixo) familia(alvo, prefixo);
+        if (classe) alvo.classList.add(classe);
+        if (!alvo.getAttribute("class") && alvo.className !== "mencao") desembrulhar(alvo);
+        sync();
+        return;
+      }
+      if (!classe) return;
+      var span = document.createElement(tag);
+      span.className = classe;
+      try {
+        range.surroundContents(span);
+      } catch (e) {
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+      }
+      window.getSelection().removeAllRanges();
+      sync();
+    }
+    var selFonte = root.querySelector("[data-fonte]");
+    if (selFonte) selFonte.addEventListener("change", function () {
+      envolver("span", selFonte.value, "ff-"); selFonte.value = "";
+    });
+    var selTam = root.querySelector("[data-tamanho]");
+    if (selTam) selTam.addEventListener("change", function () {
+      envolver("span", selTam.value, "fs-"); selTam.value = "";
+    });
+    var btnMark = root.querySelector("[data-marcar]");
+    if (btnMark) btnMark.addEventListener("click", function (e) {
+      e.preventDefault(); envolver("mark", "", null);
+    });
+
+    // ---------- modo foco (tela cheia) ----------
+    var btnExp = root.querySelector("[data-expandir]");
+    function alternarFogo() {
+      var on = root.classList.toggle("modo-total");
+      document.body.classList.toggle("editor-foco", on);
+      if (btnExp) btnExp.classList.toggle("ativo", on);
+      area.focus();
+    }
+    if (btnExp) btnExp.addEventListener("click", function (e) { e.preventDefault(); alternarFogo(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && root.classList.contains("modo-total")) alternarFogo();
+    });
+
+    // ---------- estado visual dos botões ----------
     document.addEventListener("selectionchange", function () {
       if (document.activeElement === area) atualizarBotoes();
     });
@@ -37,26 +155,49 @@
       root.querySelectorAll("[data-cmd]").forEach(function (btn) {
         try {
           var cmd = btn.getAttribute("data-cmd");
-          if (["bold", "italic", "underline", "insertUnorderedList", "insertOrderedList"].indexOf(cmd) >= 0) {
+          if (["bold", "italic", "underline", "strikeThrough", "insertUnorderedList",
+               "insertOrderedList", "subscript", "superscript"].indexOf(cmd) >= 0) {
             btn.classList.toggle("ativo", document.queryCommandState(cmd));
           }
         } catch (err) { /* noop */ }
       });
     }
 
-    function sync() { hidden.value = area.innerHTML; root.dispatchEvent(new CustomEvent("editor:change")); }
+    // ---------- contador de palavras ----------
+    var contador = root.querySelector("[data-contador]");
+    function contar() {
+      if (!contador) return;
+      var texto = (area.textContent || "").trim();
+      var palavras = texto ? texto.split(/\s+/).length : 0;
+      contador.textContent = palavras + (palavras === 1 ? " palavra" : " palavras")
+        + " · " + texto.length + " caracteres";
+    }
+    contar();
 
-    ["input", "paste", "keyup", "mouseup"].forEach(function (ev) {
+    ["input", "keyup", "mouseup"].forEach(function (ev) {
       area.addEventListener(ev, function () { sync(); });
     });
-    // cola como texto quando possível, preservando quebras básicas
+    // cola SEMPRE como texto puro com quebras de linha: evita XSS persistido
+    // (o servidor sanitiza de novo, mas o editor nunca recebe HTML arbitrario)
     area.addEventListener("paste", function (e) {
       if (!e.clipboardData) return;
-      var html = e.clipboardData.getData("text/html");
-      if (!html) return; // deixa o navegador colar texto puro
+      var texto = e.clipboardData.getData("text/plain");
+      if (!texto) { e.preventDefault(); return; }
       e.preventDefault();
-      document.execCommand("insertHTML", false, html);
+      var seguro = texto
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/\r\n|\r|\n/g, "<br>");
+      document.execCommand("insertHTML", false, seguro);
       sync();
+    });
+
+    // Ctrl+S salva o formulário hospedeiro (padrão de editores profissionais)
+    area.addEventListener("keydown", function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        var form = root.closest("form");
+        if (form) form.requestSubmit();
+      }
     });
 
     // garante submit do form com conteúdo atual
@@ -150,15 +291,16 @@
       var range = sel.getRangeAt(0);
       range.insertNode(span);
       range.setStartAfter(span);
-      range.insertNode(document.createTextNode(" "));
+      range.insertNode(document.createTextNode(" "));
       range.collapse(false);
       sel.removeAllRanges();
       sel.addRange(range);
       // registra id para o backend persistir story_character_mentions
       var ids = root.querySelector("[data-mencoes-ids]");
-      var atuais = [];
-      try { atuais = JSON.parse(ids.value || "[]"); } catch (err) { atuais = []; }
-      if (ids && atuais.indexOf(c.id) < 0) { atuais.push(c.id); ids.value = JSON.stringify(atuais); }
+      if (ids) {
+        var atuais = (ids.value || "").split(",").filter(function (x) { return x; });
+        if (atuais.indexOf(c.id) < 0) { atuais.push(c.id); ids.value = atuais.join(","); }
+      }
       sync();
       area.focus();
     }

@@ -42,6 +42,8 @@ public class PowerController extends BaseController {
     @GetMapping("/novo")
     public String novo(Model model) {
         model.addAttribute("poder", new Power());
+        model.addAttribute("sugestoesCategoria", Suggestions.CATEGORIAS_PODER);
+        model.addAttribute("sugestoesNivel", Suggestions.NIVEIS_PODER);
         model.addAttribute("titulo", "Novo poder");
         return "poderes/form";
     }
@@ -77,6 +79,8 @@ public class PowerController extends BaseController {
     public String editar(@AuthenticationPrincipal CustomUserDetails principal,
                          @PathVariable UUID id, Model model) {
         model.addAttribute("poder", library.getPower(userId(principal), id));
+        model.addAttribute("sugestoesCategoria", Suggestions.CATEGORIAS_PODER);
+        model.addAttribute("sugestoesNivel", Suggestions.NIVEIS_PODER);
         model.addAttribute("titulo", "Editar poder");
         return "poderes/form";
     }

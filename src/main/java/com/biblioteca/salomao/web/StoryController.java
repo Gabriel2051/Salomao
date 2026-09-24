@@ -101,11 +101,15 @@ public class StoryController extends BaseController {
             @RequestBody Map<String, Object> body) {
         try {
             Story atual = library.getStory(userId(principal), id);
-            @SuppressWarnings("unchecked")
-            List<String> mids = (List<String>) body.getOrDefault("mencoes", List.of());
-            List<UUID> mentionIds = new ArrayList<>();
-            for (String m : mids) {
-                try { mentionIds.add(UUID.fromString(m)); } catch (Exception ignored) {}
+            // Se o payload nao trouxer "mencoes" (ex.: autosave simples), NAO toca
+            // nas mencoes existentes: null = preservar. Lista (mesmo vazia) = substituir.
+            List<UUID> mentionIds = null;
+            Object rawMencoes = body.get("mencoes");
+            if (rawMencoes instanceof List<?> mids) {
+                mentionIds = new ArrayList<>();
+                for (Object m : mids) {
+                    try { mentionIds.add(UUID.fromString(String.valueOf(m))); } catch (Exception ignored) {}
+                }
             }
             library.saveStory(userId(principal), id,
                     str(body.get("title"), atual.getTitle()),

@@ -19,32 +19,18 @@
             <input id="title" name="title" type="text" th:value="${nota.title}" data-autosave-campo="title" maxlength="200" required></div>
         <div class="form-linha">
             <div class="campo"><label for="category">Categoria</label>
-                <input id="category" name="category" type="text" th:value="${nota.category}" data-autosave-campo="category" maxlength="80"></div>
+                <input id="category" name="category" type="text" th:value="${nota.category}" data-autosave-campo="category"
+                       maxlength="80" list="categoriasNota" placeholder="Roteiro, Mundo, Ideias…" autocomplete="off">
+                <datalist id="categoriasNota">
+                    <option th:each="c : ${categorias}" th:value="${c}"></option>
+                </datalist>
+                <small class="dica">Escolha uma categoria usada antes ou crie uma nova.</small></div>
             <div class="campo"><label for="tags">Tags (separadas por vírgula)</label>
                 <input id="tags" name="tags" type="text" th:value="${nota.tagsCsv}" data-autosave-campo="tags" maxlength="500"></div>
         </div>
         <div class="campo">
             <label>Conteúdo</label>
-            <div data-editor>
-                <div class="editor-barra" role="toolbar" aria-label="Formatação">
-                    <button data-cmd="bold" title="Negrito (Ctrl+B)"><b>B</b></button>
-                    <button data-cmd="italic" title="Itálico (Ctrl+I)"><i>I</i></button>
-                    <button data-cmd="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
-                    <button data-cmd="formatBlock" data-valor="h2" title="Título">H</button>
-                    <button data-cmd="formatBlock" data-valor="p" title="Texto normal">¶</button>
-                    <button data-cmd="insertUnorderedList" title="Lista">•≡</button>
-                    <button data-cmd="insertOrderedList" title="Lista numerada">1≡</button>
-                    <button data-cmd="formatBlock" data-valor="blockquote" title="Citação">❝</button>
-                    <button data-cmd="createLink" title="Link">🔗</button>
-                    <button data-cmd="removeFormat" title="Limpar formatação">✕</button>
-                    <button data-cmd="undo" title="Desfazer">↩</button>
-                    <button data-cmd="redo" title="Refazer">↪</button>
-                    <button data-cmd="insertHorizontalRule" title="Separador">―</button>
-                    <button data-cmd="formatBlock" data-valor="pre" title="Código">{ }</button>
-                </div>
-                <div class="editor-area" data-editor-area contenteditable="true" aria-label="Conteúdo da anotação"></div>
-                <input type="hidden" name="content" data-editor-hidden data-autosave-campo="content" th:value="${nota.content}">
-            </div>
+            <div th:replace="~{fragments/editor :: rico('content', ${nota.content}, 'Conteúdo da anotação', '36vh', '', '')}"></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn primario" type="submit">Salvar</button>

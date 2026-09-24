@@ -4,7 +4,7 @@
 <body>
 <div th:fragment="conteudo">
     <div class="cab">
-        <div><h1>Poderes</h1><p>Tokens compactos — clique para ver detalhes.</p></div>
+        <div><h1>Poderes</h1><p>Capacidades, técnicas e sistemas dos seus mundos.</p></div>
         <a class="btn primario" th:href="@{/poderes/novo}">＋ Novo poder</a>
     </div>
     <div class="barra-ferramentas">
@@ -13,17 +13,23 @@
             <button class="btn" type="submit">Buscar</button>
         </form>
     </div>
-    <div class="tokens" th:if="${!itens.empty}" style="margin-bottom:16px">
-        <span class="token" th:each="p : ${itens.content}" th:data-poder-id="${p.id}" th:text="'✦ ' + ${p.name}" role="button" tabindex="0">poder</span>
-    </div>
-    <div class="grade">
+    <div class="grade" th:if="${!itens.empty}">
         <a class="cartao" th:each="p : ${itens.content}" th:href="@{'/poderes/' + ${p.id}}">
             <h3 th:text="'✦ ' + ${p.name}">nome</h3>
             <p th:text="${p.category}" th:if="${!#strings.isEmpty(p.category)}">cat</p>
-            <span class="meta"><span th:text="${p.level}" th:if="${!#strings.isEmpty(p.level)}">nível</span></span>
+            <span class="meta"><span class="etiqueta" th:text="${p.level}" th:if="${!#strings.isEmpty(p.level)}">nível</span></span>
         </a>
     </div>
-    <div class="vazio" th:if="${itens.empty}">Nenhum poder ainda.<br><a class="btn primario" th:href="@{/poderes/novo}">Criar o primeiro</a></div>
+    <div class="vazio" th:if="${itens.empty}">
+        <div th:if="${q != null and !#strings.isEmpty(q)}">
+            Nenhum resultado para “<span th:text="${q}">q</span>”.
+            <div><a class="btn pequeno" th:href="@{/poderes}">Limpar busca</a></div>
+        </div>
+        <div th:unless="${q != null and !#strings.isEmpty(q)}">
+            Nenhum poder ainda.
+            <div><a class="btn primario" th:href="@{/poderes/novo}">Criar o primeiro</a></div>
+        </div>
+    </div>
     <div class="paginacao" th:if="${itens.totalPages > 1}">
         <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/poderes(pagina=${itens.number - 1}, q=${q})}">← Anterior</a>
         <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>

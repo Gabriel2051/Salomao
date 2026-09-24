@@ -47,6 +47,7 @@ public class CharacterController extends BaseController {
     @GetMapping("/novo")
     public String novo(Model model) {
         model.addAttribute("p", new Character());
+        model.addAttribute("sug", fichaSugestoes());
         model.addAttribute("titulo", "Novo personagem");
         return "personagens/form";
     }
@@ -71,6 +72,8 @@ public class CharacterController extends BaseController {
         // colecoes LAZY fora de transacao — LazyInitializationException).
         model.addAttribute("historiasRelacionadas", library.relatedStories(uid, id));
         model.addAttribute("mapasRelacionados", library.relatedMaps(uid, id));
+        model.addAttribute("itensPersonagem", library.itemsOfCharacter(uid, id));
+        model.addAttribute("itensPersonagem", library.itemsOfCharacter(uid, id));
         model.addAttribute("titulo", c.getFullName());
         return "personagens/detalhe";
     }
@@ -79,8 +82,19 @@ public class CharacterController extends BaseController {
     public String editar(@AuthenticationPrincipal CustomUserDetails principal,
                          @PathVariable UUID id, Model model) {
         model.addAttribute("p", library.getCharacter(userId(principal), id));
+        model.addAttribute("sug", fichaSugestoes());
         model.addAttribute("titulo", "Editar personagem");
         return "personagens/form";
+    }
+
+    /** Opcoes de preenchimento rapido: o usuario escolhe ou digita um valor proprio. */
+    private Map<String, List<String>> fichaSugestoes() {
+        return Map.of(
+                "generos", Suggestions.GENEROS,
+                "especies", Suggestions.ESPECIES,
+                "status", Suggestions.STATUS_PERSONAGEM,
+                "olhos", Suggestions.OLHOS,
+                "cabelos", Suggestions.CABELOS);
     }
 
     @PostMapping("/{id}")

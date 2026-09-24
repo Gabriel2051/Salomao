@@ -1,9 +1,6 @@
 package com.biblioteca.salomao.web;
 
 import com.biblioteca.salomao.service.UserService;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,11 +32,12 @@ public class AuthController {
         return "registro";
     }
 
+    /** A validacao (e as mensagens amigaveis) ficam no UserService. */
     @PostMapping("/registro")
     public String registrar(
-            @RequestParam @NotBlank String username,
-            @RequestParam @NotBlank @Email String email,
-            @RequestParam @Size(min = 8) String password,
+            @RequestParam String username,
+            @RequestParam String email,
+            @RequestParam String password,
             @RequestParam String confirm,
             RedirectAttributes redirect,
             Model model) {

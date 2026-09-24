@@ -20,14 +20,45 @@
   }
   window.salomaoFetch = fetchJson;
 
+  // ---- nav ativa por URL (funciona em subpaginas: form, detalhe, edicao) ----
+  document.addEventListener("DOMContentLoaded", function () {
+    var path = window.location.pathname;
+    document.querySelectorAll(".nav a").forEach(function (a) {
+      var href = a.getAttribute("href");
+      if (href && (path === href || path.indexOf(href + "/") === 0)) {
+        a.classList.add("ativo");
+        a.setAttribute("aria-current", "page");
+      }
+    });
+  });
+
   // ---- menu mobile ----
+  function definirMenu(aberto) {
+    document.body.classList.toggle("menu-aberto", aberto);
+    ["menuBtn", "menuBtn2"].forEach(function (mid) {
+      var bt = document.getElementById(mid);
+      if (bt) {
+        bt.setAttribute("aria-expanded", aberto ? "true" : "false");
+        bt.setAttribute("aria-label", aberto ? "Fechar navegação" : "Abrir navegação");
+      }
+    });
+  }
   ["menuBtn", "menuBtn2"].forEach(function (id) {
     var b = document.getElementById(id);
-    if (b) b.addEventListener("click", function () { document.body.classList.toggle("menu-aberto"); });
+    if (b) b.addEventListener("click", function () {
+      definirMenu(!document.body.classList.contains("menu-aberto"));
+    });
+  });
+  // clique no scrim (pseudo-elemento ::after): evento chega com target = body
+  document.addEventListener("click", function (e) {
+    if (document.body.classList.contains("menu-aberto") && e.target === document.body) definirMenu(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && document.body.classList.contains("menu-aberto")) definirMenu(false);
   });
   var sb = document.getElementById("sidebar");
   if (sb) sb.addEventListener("click", function (e) {
-    if (e.target.closest("a")) document.body.classList.remove("menu-aberto");
+    if (e.target.closest("a")) definirMenu(false);
   });
 
   // ---- confirmação de exclusão ----
@@ -122,6 +153,7 @@
   function destacar() {
     Array.prototype.forEach.call(paletaLista.querySelectorAll("a"), function (a, i) {
       a.classList.toggle("ativo", i === sel);
+      if (i === sel) a.scrollIntoView({ block: "nearest" });
     });
   }
 

@@ -10,7 +10,7 @@ import org.jsoup.safety.Safelist;
 public final class Sanitizer {
 
     private static final Safelist RICH = Safelist.relaxed()
-            .addTags("h1", "h2", "h3", "hr", "pre", "code", "span", "mark")
+            .addTags("h1", "h2", "h3", "hr", "pre", "code", "span", "mark", "s")
             .addAttributes("a", "href", "title", "target", "rel")
             .addAttributes("span", "class", "data-mention-id", "data-mention-type")
             .addProtocols("a", "href", "http", "https", "mailto")
@@ -39,15 +39,21 @@ public final class Sanitizer {
         return Jsoup.clean(input, Safelist.none()).trim();
     }
 
-    /** Normaliza CSV de tags: minusculas, sem duplicadas, max 20. */
+    /** Normaliza CSV de tags: minusculas, sem duplicadas, max 20, total <= 488 chars
+     *  (coluna tags_csv tem 500; sem limite total, 13+ tags longas estouravam a coluna). */
     public static String tags(String csv) {
         if (csv == null || csv.isBlank()) return "";
         String[] parts = csv.split(",");
         java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+        int total = 0;
         for (String p : parts) {
             String t = Jsoup.clean(p, Safelist.none()).trim().toLowerCase()
                     .replaceAll("[^\\p{L}\\p{N} _-]", "");
-            if (!t.isBlank() && t.length() <= 40) set.add(t);
+            if (!t.isBlank() && t.length() <= 40) {
+                int novo = total + t.length() + (set.isEmpty() ? 0 : 1);
+                if (novo > 488) break;
+                if (set.add(t)) total = novo;
+            }
             if (set.size() >= 20) break;
         }
         return String.join(",", set);

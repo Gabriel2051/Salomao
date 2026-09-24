@@ -24,7 +24,7 @@
         <section class="painel" th:if="${!resultado.stories().isEmpty()}">
             <h2>Histórias</h2>
             <div class="lista-linhas">
-                <a class="linha" th:each="s : ${resultado.stories()}" th:href="@{'/historias/' + ${s.id}}"><span class="cresce titulo" th:text="${s.title}">t</span><span class="etiqueta" th:text="${s.status}">st</span></a>
+                <a class="linha" th:each="s : ${resultado.stories()}" th:href="@{'/historias/' + ${s.id}}"><span class="cresce titulo" th:text="${s.title}">t</span><span class="etiqueta" th:text="${s.status.label}">st</span></a>
             </div>
         </section>
         <section class="painel" th:if="${!resultado.notes().isEmpty()}">
@@ -39,7 +39,17 @@
                 <a class="linha" th:each="m : ${resultado.maps()}" th:href="@{'/mapas/' + ${m.id}}"><span class="cresce titulo" th:text="${m.title}">t</span></a>
             </div>
         </section>
-        <div class="vazio" th:if="${resultado.characters().isEmpty() && resultado.powers().isEmpty() && resultado.stories().isEmpty() && resultado.notes().isEmpty() && resultado.maps().isEmpty()}">
+        <section class="painel" th:if="${!resultado.items().isEmpty()}">
+            <h2>Catálogo</h2>
+            <div class="lista-linhas">
+                <a class="linha" th:each="i : ${resultado.items()}" th:href="@{'/catalogo/' + ${i.id}}">
+                    <span class="glifo" th:text="${T(com.biblioteca.salomao.web.KindGlyph).of(i.kind)}">❖</span>
+                    <span class="cresce titulo" th:text="${i.name}">item</span>
+                    <span class="etiqueta" th:if="${!#strings.isEmpty(i.kind)}" th:text="${i.kind}">tipo</span>
+                </a>
+            </div>
+        </section>
+        <div class="vazio" th:if="${resultado.characters().isEmpty() && resultado.powers().isEmpty() && resultado.stories().isEmpty() && resultado.notes().isEmpty() && resultado.maps().isEmpty() && resultado.items().isEmpty()}">
             Nenhum resultado para “<span th:text="${q}">q</span>”.
         </div>
     </div>

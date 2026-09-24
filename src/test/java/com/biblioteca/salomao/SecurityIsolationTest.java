@@ -112,6 +112,39 @@ class SecurityIsolationTest {
         assertThat(dashB.activities()).isEmpty();
     }
 
+    @Test
+    void usuarioBNaoAcessaItensDoCatalogoDeA() {
+        User a = novoUsuario("iso_a");
+        User b = novoUsuario("iso_b");
+        var item = library.saveCatalogItem(a.getId(), null, "Relíquia Secreta", "Relíquia",
+                "", "", "", "", "", "Único", null, "", false, false);
+
+        // leitura/exclusao direta bloqueadas (404 — nao revela existencia)
+        assertThatThrownBy(() -> library.getCatalogItem(b.getId(), item.getId()))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> library.deleteCatalogItem(b.getId(), item.getId()))
+                .isInstanceOf(ResponseStatusException.class);
+
+        // item de A nao pode ter portador do usuario B (mesma regra dos poderes)
+        Character cb = character(b.getId(), "Personagem de B");
+        assertThatThrownBy(() -> library.saveCatalogItem(a.getId(), item.getId(), item.getName(),
+                "", "", "", "", "", "", "", cb.getId(), "", false, false))
+                .isInstanceOf(ResponseStatusException.class);
+
+        // mapa de A nao referencia item de B
+        var mapa = library.saveMap(a.getId(), null, "Mapa de A", "");
+        var noComRefAlheia = new LibraryService.NodeDto(UUID.randomUUID(), "ITEM", "x", "",
+                "ITEM", item.getId(), 0, 0, "", false);
+        assertThatThrownBy(() -> library.saveGraph(b.getId(), mapa.getId(), List.of(noComRefAlheia), List.of()))
+                .isInstanceOf(ResponseStatusException.class);
+
+        // pesquisa e dashboard nao vazam
+        assertThat(library.globalSearch(b.getId(), "Secreta").items()).isEmpty();
+        assertThat(library.globalSearch(a.getId(), "Secreta").items()).hasSize(1);
+        assertThat(library.dashboard(a.getId()).items()).isEqualTo(1);
+        assertThat(library.dashboard(b.getId()).items()).isZero();
+    }
+
     private Character character(UUID uid, String nome) {
         Character form = new Character();
         form.setFullName(nome);

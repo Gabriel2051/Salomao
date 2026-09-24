@@ -22,9 +22,9 @@
     </div>
     <div class="vazio" th:if="${itens.empty}">Nenhum mapa ainda. Crie o primeiro acima.</div>
     <div class="paginacao" th:if="${itens.totalPages > 1}">
-        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/mapas(pagina=${itens.number - 1}, q=${q})}">← Anterior</a>
+        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/mapas(pagina=${itens.number - 1})}">← Anterior</a>
         <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>
-        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/mapas(pagina=${itens.number + 1}, q=${q})}">Próxima →</a>
+        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/mapas(pagina=${itens.number + 1})}">Próxima →</a>
     </div>
 </div>
 </body>

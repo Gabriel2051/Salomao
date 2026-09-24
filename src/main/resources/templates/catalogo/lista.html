@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo='Catálogo', conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1>Catálogo</h1><p>Armas, trajes, feitiços, materiais e artefatos do seu universo.</p></div>
+        <a class="btn primario" th:href="@{/catalogo/novo}">＋ Novo item</a>
+    </div>
+
+    <div class="barra-ferramentas">
+        <form class="pesquisa-form" th:action="@{/catalogo}" method="get">
+            <input type="search" name="q" th:value="${q}" placeholder="Pesquisar itens…" aria-label="Pesquisar itens">
+            <button class="btn" type="submit">Buscar</button>
+        </form>
+        <span class="cresce"></span>
+        <a class="btn pequeno fantasma" th:href="@{/catalogo}" th:if="${tipo != null or arquivados != null or q != null}">Limpar filtros</a>
+    </div>
+
+    <div class="trilha-filtros" th:if="${!tipos.isEmpty()}">
+        <a class="chip-filtro" th:classappend="${tipo == null} ? 'ativo'" th:href="@{/catalogo}">Todos</a>
+        <a class="chip-filtro" th:each="t : ${tipos}" th:classappend="${tipo == t} ? 'ativo'"
+           th:href="@{/catalogo(tipo=${t})}"
+           th:text="${T(com.biblioteca.salomao.web.KindGlyph).of(t)} + ' ' + ${t}">tipo</a>
+    </div>
+
+    <div class="grade" th:if="${!itens.empty}">
+        <a class="cartao" th:each="i : ${itens.content}" th:href="@{'/catalogo/' + ${i.id}}">
+            <h3><span class="glifo" th:text="${T(com.biblioteca.salomao.web.KindGlyph).of(i.kind)}">❖</span>
+                <span th:text="${i.name}">nome</span></h3>
+            <p th:text="${i.summary}" th:if="${!#strings.isEmpty(i.summary)}">resumo</p>
+            <span class="meta">
+                <span class="etiqueta" th:if="${!#strings.isEmpty(i.kind)}" th:text="${i.kind}">tipo</span>
+                <span class="etiqueta" th:if="${!#strings.isEmpty(i.rarity)}" th:text="${i.rarity}">raridade</span>
+                <span class="etiqueta fav" th:if="${i.favorite}">★</span>
+                <span class="etiqueta arq" th:if="${i.archived}">arquivado</span>
+            </span>
+        </a>
+    </div>
+
+    <div class="vazio" th:if="${itens.empty}">
+        <div th:if="${q != null and !#strings.isEmpty(q)}">
+            Nenhum item para “<span th:text="${q}">q</span>”.
+            <div><a class="btn pequeno" th:href="@{/catalogo}">Limpar busca</a></div>
+        </div>
+        <div th:unless="${q != null and !#strings.isEmpty(q)}">
+            <div class="vazio-icone" aria-hidden="true">❖</div>
+            O catálogo guarda as <b>coisas</b> do seu mundo: a espada do protagonista, o metal raro
+            da forja do norte, o traje cerimonial da corte…
+            <div><a class="btn primario" th:href="@{/catalogo/novo}">Catalogar o primeiro item</a></div>
+        </div>
+    </div>
+
+    <div class="paginacao" th:if="${itens.totalPages > 1}">
+        <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/catalogo(pagina=${itens.number - 1}, q=${q}, tipo=${tipo})}">← Anterior</a>
+        <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>
+        <a class="btn pequeno" th:if="${!itens.last}" th:href="@{/catalogo(pagina=${itens.number + 1}, q=${q}, tipo=${tipo})}">Próxima →</a>
+    </div>
+</div>
+</body>
+</html>

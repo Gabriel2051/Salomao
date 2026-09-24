@@ -21,17 +21,26 @@
         <a class="cartao" th:each="s : ${itens.content}" th:href="@{'/historias/' + ${s.id}}">
             <h3 th:text="${s.title}">título</h3>
             <p th:text="${s.subtitle}" th:if="${!#strings.isEmpty(s.subtitle)}">sub</p>
-            <span class="meta"><span class="etiqueta" th:text="${s.status}">st</span><span th:text="${#temporals.format(s.updatedAt, 'dd/MM/yyyy')}">data</span></span>
+            <span class="meta"><span class="etiqueta" th:text="${s.status.label}">st</span><span th:text="${#temporals.format(s.updatedAt, 'dd/MM/yyyy')}">data</span></span>
         </a>
     </div>
     <div class="lista-linhas" th:if="${visao == 'lista'}">
         <a class="linha" th:each="s : ${itens.content}" th:href="@{'/historias/' + ${s.id}}">
             <span class="cresce titulo" th:text="${s.title}">t</span>
-            <span class="etiqueta" th:text="${s.status}">st</span>
+            <span class="etiqueta" th:text="${s.status.label}">st</span>
             <span class="etiqueta fav" th:if="${s.favorite}">★</span>
         </a>
     </div>
-    <div class="vazio" th:if="${itens.empty}">Nenhuma história ainda.<br><a class="btn primario" th:href="@{/historias/nova}">Escrever a primeira</a></div>
+    <div class="vazio" th:if="${itens.empty}">
+        <div th:if="${q != null and !#strings.isEmpty(q)}">
+            Nenhum resultado para “<span th:text="${q}">q</span>”.
+            <div><a class="btn pequeno" th:href="@{/historias}">Limpar busca</a></div>
+        </div>
+        <div th:unless="${q != null and !#strings.isEmpty(q)}">
+            Nenhuma história ainda.
+            <div><a class="btn primario" th:href="@{/historias/nova}">Escrever a primeira</a></div>
+        </div>
+    </div>
     <div class="paginacao" th:if="${itens.totalPages > 1}">
         <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/historias(pagina=${itens.number - 1}, q=${q}, visao=${visao})}">← Anterior</a>
         <span th:text="${itens.number + 1} + ' / ' + ${itens.totalPages}">1/1</span>

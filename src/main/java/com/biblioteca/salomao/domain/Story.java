@@ -20,7 +20,12 @@ import java.util.UUID;
 })
 public class Story {
 
-    public enum Status { RASCUNHO, EM_REVISAO, CONCLUIDA }
+    public enum Status {
+        RASCUNHO("Rascunho"), EM_REVISAO("Em revisão"), CONCLUIDA("Concluída");
+        private final String label;
+        Status(String label) { this.label = label; }
+        public String getLabel() { return label; }
+    }
 
     @Id
     @GeneratedValue

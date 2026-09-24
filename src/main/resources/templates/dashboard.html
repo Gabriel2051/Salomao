@@ -12,15 +12,17 @@
             <a class="btn primario" th:href="@{/personagens/novo}">＋ Personagem</a>
             <a class="btn" th:href="@{/historias/nova}">＋ História</a>
             <a class="btn" th:href="@{/anotacoes/nova}">＋ Anotação</a>
+            <a class="btn" th:href="@{/catalogo/novo}">＋ Item</a>
         </div>
     </div>
 
     <div class="estatisticas">
-        <a class="estat" th:href="@{/personagens}"><span class="num" th:text="${dash.characters()}">0</span><div class="rot">Personagens</div></a>
-        <a class="estat" th:href="@{/poderes}"><span class="num" th:text="${dash.powers()}">0</span><div class="rot">Poderes</div></a>
-        <a class="estat" th:href="@{/historias}"><span class="num" th:text="${dash.stories()}">0</span><div class="rot">Histórias</div></a>
-        <a class="estat" th:href="@{/anotacoes}"><span class="num" th:text="${dash.notes()}">0</span><div class="rot">Anotações</div></a>
-        <a class="estat" th:href="@{/mapas}"><span class="num" th:text="${dash.maps()}">0</span><div class="rot">Mapas mentais</div></a>
+        <a class="estat" th:href="@{/personagens}"><span class="num" th:text="${dash.characters()}">0</span><div class="rot">♟ Personagens</div></a>
+        <a class="estat" th:href="@{/poderes}"><span class="num" th:text="${dash.powers()}">0</span><div class="rot">✦ Poderes</div></a>
+        <a class="estat" th:href="@{/catalogo}"><span class="num" th:text="${dash.items()}">0</span><div class="rot">❖ Itens do catálogo</div></a>
+        <a class="estat" th:href="@{/historias}"><span class="num" th:text="${dash.stories()}">0</span><div class="rot">❧ Histórias</div></a>
+        <a class="estat" th:href="@{/anotacoes}"><span class="num" th:text="${dash.notes()}">0</span><div class="rot">✎ Anotações</div></a>
+        <a class="estat" th:href="@{/mapas}"><span class="num" th:text="${dash.maps()}">0</span><div class="rot">⋈ Mapas mentais</div></a>
     </div>
 
     <div class="detalhe-grade">

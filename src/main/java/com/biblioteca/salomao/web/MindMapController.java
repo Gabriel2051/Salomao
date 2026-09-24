@@ -49,8 +49,11 @@ public class MindMapController extends BaseController {
     @GetMapping("/{id}")
     public String editor(@AuthenticationPrincipal CustomUserDetails principal,
                          @PathVariable UUID id, Model model) {
-        MentalMap m = library.getMap(userId(principal), id);
+        var uid = userId(principal);
+        MentalMap m = library.getMap(uid, id);
         model.addAttribute("mapa", m);
+        // opcoes (id + nome) para vincular nos a entidades reais da biblioteca
+        model.addAttribute("refs", library.mapRefs(uid));
         model.addAttribute("titulo", m.getTitle());
         return "mapas/editor";
     }

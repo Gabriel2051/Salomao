@@ -13,6 +13,7 @@ public interface CharacterRepository extends JpaRepository<Character, UUID> {
     Page<Character> findByUserId(UUID userId, Pageable pageable);
     Page<Character> findByUserIdAndArchived(UUID userId, boolean archived, Pageable pageable);
     List<Character> findTop10ByUserIdOrderByUpdatedAtDesc(UUID userId);
+    List<Character> findByUserIdOrderByFullNameAsc(UUID userId);
     @Query("select c from Character c where c.user.id = :uid and (lower(c.fullName) like lower(concat('%', :q, '%')) or lower(c.alias) like lower(concat('%', :q, '%')) or lower(c.nickname) like lower(concat('%', :q, '%')))")
     List<Character> searchByName(@Param("uid") UUID userId, @Param("q") String q, Pageable pageable);
     @Query("select c from Character c where c.user.id = :uid and (lower(c.fullName) like lower(concat('%', :q, '%')) or lower(c.backstory) like lower(concat('%', :q, '%')))")

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo=${item.id == null ? 'Novo item' : item.name}, conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div><h1 th:text="${item.id == null ? 'Novo item' : 'Editar item'}">Item</h1>
+            <p>Uma coisa do seu mundo com identidade própria: aparência, história e função.</p></div>
+        <a class="btn fantasma" th:href="${item.id == null ? '/catalogo' : '/catalogo/' + item.id}">← Voltar</a>
+    </div>
+    <form th:action="${item.id == null ? '/catalogo' : '/catalogo/' + item.id}" method="post">
+        <fieldset class="secao"><legend>Identidade</legend>
+            <div class="campo"><label for="name">Nome *</label>
+                <input id="name" name="name" type="text" th:value="${item.name}" maxlength="160" required
+                       placeholder="Ex.: Lâmina do Crepúsculo, Aço Negro, Traje Cerimonial de Vhalis"></div>
+            <div class="form-linha">
+                <div class="campo"><label for="kind">Tipo</label>
+                    <input id="kind" name="kind" type="text" th:value="${item.kind}" maxlength="60"
+                           list="dlTiposItem" autocomplete="off" placeholder="Arma, Traje, Feitiço, Material…">
+                    <datalist id="dlTiposItem">
+                        <option th:each="t : ${sugestoesTipos}" th:value="${t}"></option>
+                        <option th:each="t : ${tiposExistentes}" th:value="${t}" th:if="${!sugestoesTipos.contains(t)}"></option>
+                    </datalist>
+                    <small class="dica">Escolha um tipo da lista ou crie o seu (ex.: “Chave rúnica”).</small></div>
+                <div class="campo"><label for="rarity">Raridade</label>
+                    <input id="rarity" name="rarity" type="text" th:value="${item.rarity}" maxlength="40"
+                           list="dlRaridades" autocomplete="off" placeholder="Comum, Raro, Único…">
+                    <datalist id="dlRaridades">
+                        <option th:each="r : ${sugestoesRaridade}" th:value="${r}"></option>
+                    </datalist></div>
+            </div>
+            <div class="campo"><label for="summary">Resumo</label>
+                <input id="summary" name="summary" type="text" th:value="${item.summary}" maxlength="240"
+                       placeholder="Uma frase para reconhecer o item nas listas e pesquisas."></div>
+            <div class="form-linha">
+                <div class="campo"><label for="material">Material principal</label>
+                    <input id="material" name="material" type="text" th:value="${item.material}" maxlength="160"
+                           placeholder="Ex.: aço valiriano, couro de drake…"></div>
+                <div class="campo"><label for="ownerId">Portador (personagem)</label>
+                    <select id="ownerId" name="ownerId">
+                        <option value="">— Ninguém / depositado —</option>
+                        <option th:each="c : ${personagens}" th:value="${c.id}" th:text="${c.fullName}"
+                                th:selected="${item.owner != null and item.owner.id == c.id}">p</option>
+                    </select>
+                    <small class="dica">Opcional. Vincula o item à ficha do personagem.</small></div>
+            </div>
+        </fieldset>
+
+        <details class="secao recolhivel" th:open="${item.id == null || !#strings.isEmpty(item.appearance)}">
+            <summary><span class="resumo-titulo">Aparência</span><span class="muted resumo-sub">forma, cores, detalhes visuais…</span></summary>
+            <div class="secao-corpo">
+                <div th:replace="~{fragments/editor :: rico('appearance', ${item.appearance}, 'Aparência do item', '180px', '', '')}"></div>
+            </div>
+        </details>
+
+        <details class="secao recolhivel" th:open="${item.id == null || !#strings.isEmpty(item.effects)}">
+            <summary><span class="resumo-titulo">O que faz</span><span class="muted resumo-sub">efeitos, encantamentos, utilidade…</span></summary>
+            <div class="secao-corpo">
+                <div th:replace="~{fragments/editor :: rico('effects', ${item.effects}, 'O que o item faz', '180px', '', '')}"></div>
+            </div>
+        </details>
+
+        <details class="secao recolhivel" th:open="${item.id == null || !#strings.isEmpty(item.lore)}">
+            <summary><span class="resumo-titulo">História do item</span><span class="muted resumo-sub">quem forjou, por onde passou, lendas…</span></summary>
+            <div class="secao-corpo">
+                <div th:replace="~{fragments/editor :: rico('lore', ${item.lore}, 'História do item', '220px', '', '')}"></div>
+            </div>
+        </details>
+
+        <details class="secao recolhivel" th:open="${!#strings.isEmpty(item.tagsCsv) || item.favorite || item.archived}">
+            <summary><span class="resumo-titulo">Organização</span><span class="muted resumo-sub">tags, favorito, arquivo…</span></summary>
+            <div class="secao-corpo">
+                <div class="campo"><label for="tags">Tags (vírgula)</label>
+                    <input id="tags" name="tags" type="text" th:value="${item.tagsCsv}" maxlength="500"></div>
+                <div class="form-linha" th:if="${item.id != null}">
+                    <label class="check"><input type="checkbox" name="favorite" value="true" th:checked="${item.favorite}"> Favorito</label>
+                    <label class="check"><input type="checkbox" name="archived" value="true" th:checked="${item.archived}"> Arquivado</label>
+                </div>
+            </div>
+        </details>
+
+        <div class="acoes-form">
+            <button class="btn primario" type="submit" th:text="${item.id == null ? 'Adicionar ao catálogo' : 'Salvar alterações'}">Salvar</button>
+            <a class="btn fantasma" th:href="${item.id == null ? '/catalogo' : '/catalogo/' + item.id}">Cancelar</a>
+        </div>
+    </form>
+    <script th:src="@{/js/editor.js}" defer></script>
+</div>
+</body>
+</html>

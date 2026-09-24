@@ -123,4 +123,38 @@ class LibraryCrudTest {
         library.deleteNote(usuario(), n.getId());
         assertThat(library.listNotes(usuario(), null, null, PageRequest.of(0, 10)).getTotalElements()).isZero();
     }
+
+    @Test
+    void catalogoCicloCompletoComPersonagemEBusca() {
+        Character c = personagem("Sable Vetran");
+        var item = library.saveCatalogItem(usuario(), null, "Lâmina do Crepúsculo", "Arma",
+                "Espada de aço-negro", "<p>Lâmina escura com veios rubros.</p>",
+                "<p>Forjada na queda do reino.</p>", "<p>Corta encantamentos menores.</p>",
+                "Aço-negro", "Lendário", c.getId(), "arma,lendaria", true, false);
+        assertThat(item.getId()).isNotNull();
+        assertThat(item.getOwner().getFullName()).isEqualTo("Sable Vetran");
+        assertThat(item.getTagsCsv()).contains("lendaria"); // tags normalizadas
+
+        // ficha do personagem lista o item; busca global e filtro por tipo encontram
+        assertThat(library.itemsOfCharacter(usuario(), c.getId())).hasSize(1);
+        assertThat(library.globalSearch(usuario(), "Crepúsculo").items()).hasSize(1);
+        assertThat(library.listCatalog(usuario(), null, "Arma", null, PageRequest.of(0, 10))
+                .getTotalElements()).isEqualTo(1);
+        assertThat(library.catalogKinds(usuario())).containsExactly("Arma");
+
+        // nó de mapa vinculando o item e aceito (refType ITEM validado por dono)
+        var mapa = library.saveMap(usuario(), null, "Mapa de tesouros", "");
+        var no = new LibraryService.NodeDto(UUID.randomUUID(), "ITEM", "Lâmina", "",
+                "ITEM", item.getId(), 10, 10, "", false);
+        library.saveGraph(usuario(), mapa.getId(), List.of(no), List.of());
+        assertThat(library.getMap(usuario(), mapa.getId()).getNodes()).hasSize(1);
+
+        // excluir o personagem NAO exclui o item: apenas desvincula o portador
+        library.deleteCharacter(usuario(), c.getId());
+        assertThat(library.getCatalogItem(usuario(), item.getId()).getOwner()).isNull();
+
+        library.deleteCatalogItem(usuario(), item.getId());
+        assertThat(library.listCatalog(usuario(), null, null, null, PageRequest.of(0, 10))
+                .getTotalElements()).isZero();
+    }
 }

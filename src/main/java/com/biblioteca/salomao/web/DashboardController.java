@@ -60,6 +60,7 @@ public class DashboardController extends BaseController {
         r.stories().forEach(s -> itens.add(item("história", s.getTitle(), "/historias/" + s.getId())));
         r.notes().forEach(n -> itens.add(item("anotação", n.getTitle(), "/anotacoes/" + n.getId())));
         r.maps().forEach(m -> itens.add(item("mapa", m.getTitle(), "/mapas/" + m.getId())));
+        r.items().forEach(i -> itens.add(item("item", i.getName(), "/catalogo/" + i.getId())));
         return Map.of("itens", itens);
     }
 

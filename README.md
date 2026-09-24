@@ -1,8 +1,9 @@
 # SALOMÃO — biblioteca pessoal digital
 
 Sistema web completo para criação, organização e gerenciamento de conteúdos narrativos:
-**anotações, personagens, poderes, histórias e mapas mentais** — todos privados por usuário,
-com pesquisa global, editor rico com autosave, menções `@Personagem` e mapas interativos.
+**anotações, personagens, poderes, catálogo de itens, histórias e mapas mentais** — todos
+privados por usuário, com pesquisa global, editor rico com autosave, menções `@Personagem`
+e mapas interativos.
 
 Identidade visual própria dark premium (preto profundo `#080808` + vermelho `#B5121B`).
 
@@ -23,12 +24,13 @@ Identidade visual própria dark premium (preto profundo `#080808` + vermelho `#B
 com.biblioteca.salomao
 ├── config/        SecurityConfig (sessão, CSRF, CSP, headers), WebConfig, DevSeedConfig (profile seed)
 ├── security/      CustomUserDetails(Service), RateLimitFilter (login/registro), OwnershipService (anti-IDOR)
-├── domain/        User, Note, Character, Power, Story, StoryMention,
+├── domain/        User, Note, Character, Power, Story, StoryMention, CatalogItem,
 │                  MentalMap, MindMapNode, MindMapEdge, Tag, EntityTag, ActivityLog
 ├── repository/    Spring Data JPA — TODAS as consultas filtram por user_id
 ├── service/       UserService (registro/senha forte), LibraryService (regras + sanitização),
 │                  ActivityService (atividades recentes)
-├── web/           AuthController, DashboardController, Note/Character/Power/Story/MindMapController,
+├── web/           AuthController, DashboardController, Note/Character/Power/Story/MindMap/
+│                  CatalogController, Suggestions (opções dos formulários), KindGlyph (glifos),
 │                  GlobalExceptionHandler (mensagens amigáveis; 500 nunca vaza detalhe)
 └── util/          Sanitizer (Jsoup)
 ```
@@ -179,14 +181,20 @@ ls build/libs/*.jar
 
 - Registro/login/logout, sessões com expiração, troca de senha, perfil
 - Dashboard (contadores + atividades recentes + continuar editando + criação rápida)
-- Anotações (CRUD, busca, tags/categorias, favoritos, arquivamento, grade/lista)
-- Personagens (ficha completa: básicas, aparência, personalidade, história, habilidades)
-- Poderes (tokens clicáveis → modal/painel, personagens associados)
-- Personagem ↔ poderes (N:N, mesma regra de dono nos dois lados)
+- Anotações (CRUD, busca, tags/categorias com autocompletar, favoritos, arquivamento, grade/lista)
+- Personagens (ficha em seções recolhíveis: básicas, aparência, personalidade, história,
+  habilidades; campos com sugestões selecionáveis + valor personalizado)
+- Poderes (tokens clicáveis → modal/painel, personagens associados, categoria/nível com sugestões)
+- **Catálogo** (armas, trajes, feitiços, materiais, artefatos… com aparência, história do item,
+  efeitos, raridade e portador-personagem; filtro por tipo, busca e ícone por categoria)
+- Personagem ↔ poderes (N:N, mesma regra de dono nos dois lados) e personagem ↔ itens (vínculo opcional)
 - Histórias (editor rico, status, menções `@` com autocomplete e vínculo real no banco)
-- Editor rico (negrito/itálico/sublinhado/títulos/listas/citação/link) + autosave com indicador
-- Mapas mentais interativos (nós arrastáveis, tipos, conexões, zoom/pan/centralizar, autosave)
-- Pesquisa global (página + paleta `Ctrl+K` com navegação por teclado)
+- Editor rico unificado: fontes, tamanhos, realce, tachado, sub/sup, títulos, listas, citação,
+  link, separador, código, modo foco em tela cheia, contador de palavras e `Ctrl+S` para salvar
+- Mapas mentais interativos (nós arrastáveis com cor/ícone por tipo, vínculo real a personagens/
+  poderes/histórias/anotações/itens, arestas curvas com rótulo e seta, recolher ramos, auto-layout,
+  zoom ancorado/pan/ajustar, atalhos de teclado, autosave)
+- Pesquisa global (página + paleta `Ctrl+K` com navegação por teclado) incluindo o catálogo
 - Responsivo (desktop/notebook/tablet/celular), acessibilidade (foco, labels, ARIA, teclado)
 - Tratamento de erros amigável, confirmações em exclusões, estados loading/sucesso/erro/vazio
 

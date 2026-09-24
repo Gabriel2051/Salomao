@@ -43,8 +43,9 @@ public class NoteController extends BaseController {
     }
 
     @GetMapping("/nova")
-    public String nova(Model model) {
+    public String nova(@AuthenticationPrincipal CustomUserDetails principal, Model model) {
         model.addAttribute("nota", new Note());
+        model.addAttribute("categorias", library.noteCategories(userId(principal)));
         model.addAttribute("titulo", "Nova anotação");
         return "anotacoes/form";
     }
@@ -65,7 +66,9 @@ public class NoteController extends BaseController {
     @GetMapping("/{id}")
     public String ver(@AuthenticationPrincipal CustomUserDetails principal,
                       @PathVariable UUID id, Model model) {
-        model.addAttribute("nota", library.getNote(userId(principal), id));
+        var uid = userId(principal);
+        model.addAttribute("nota", library.getNote(uid, id));
+        model.addAttribute("categorias", library.noteCategories(uid));
         model.addAttribute("titulo", "Anotação");
         return "anotacoes/form";
     }
@@ -78,15 +81,10 @@ public class NoteController extends BaseController {
                             @RequestParam(required = false) String category,
                             @RequestParam(required = false) String tags,
                             @RequestParam(defaultValue = "false") boolean favorite,
-                            @RequestParam(defaultValue = "false") boolean archived,
-                            @RequestParam(required = false) Long version,
-                            RedirectAttributes redirect) {
-        try {
-            library.saveNote(userId(principal), id, title, content, category, tags, favorite, archived);
-        } catch (Exception e) {
-            redirect.addFlashAttribute("erro", "Não foi possível salvar suas alterações. Tente novamente.");
-            return "redirect:/anotacoes/" + id;
-        }
+                             @RequestParam(defaultValue = "false") boolean archived,
+                             RedirectAttributes redirect) {
+        // Nota: 404 de isolamento (recurso alheio) NAO e capturado aqui — sobe intacto.
+        library.saveNote(userId(principal), id, title, content, category, tags, favorite, archived);
         redirect.addFlashAttribute("sucesso", "Alterações salvas.");
         return "redirect:/anotacoes/" + id;
     }
@@ -126,9 +124,7 @@ public class NoteController extends BaseController {
     @PostMapping("/{id}/favoritar")
     public String favoritar(@AuthenticationPrincipal CustomUserDetails principal,
                             @PathVariable UUID id, RedirectAttributes redirect) {
-        Note n = library.getNote(userId(principal), id);
-        library.saveNote(userId(principal), id, n.getTitle(), n.getContent(), n.getCategory(),
-                n.getTagsCsv(), !n.isFavorite(), n.isArchived());
+        library.toggleFavoriteNote(userId(principal), id);
         return "redirect:/anotacoes/" + id;
     }
 }

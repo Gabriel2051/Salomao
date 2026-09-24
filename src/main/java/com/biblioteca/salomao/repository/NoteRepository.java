@@ -16,5 +16,7 @@ public interface NoteRepository extends JpaRepository<Note, UUID> {
     long countByUserId(UUID userId);
     @Query("select n from Note n where n.user.id = :uid and (lower(n.title) like lower(concat('%', :q, '%')) or lower(n.content) like lower(concat('%', :q, '%')))")
     Page<Note> search(@Param("uid") UUID userId, @Param("q") String q, Pageable pageable);
+    @Query("select distinct n.category from Note n where n.user.id = :uid and n.category <> '' order by n.category")
+    List<String> distinctCategories(@Param("uid") UUID userId);
     boolean existsByIdAndUserId(UUID id, UUID userId);
 }

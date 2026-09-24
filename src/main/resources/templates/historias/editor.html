@@ -24,35 +24,14 @@
             <div class="campo"><label for="status">Status</label>
                 <select id="status" name="status" data-autosave-campo="status">
                     <option th:each="st : ${historia.id != null ? statusValores : T(com.biblioteca.salomao.domain.Story.Status).values()}"
-                            th:value="${st}" th:text="${st}" th:selected="${historia.status == st}">st</option>
+                            th:value="${st}" th:text="${st.label}" th:selected="${historia.status == st}">st</option>
                 </select></div>
         </div>
         <div class="campo"><label for="tags">Tags (vírgula)</label>
             <input id="tags" name="tags" type="text" th:value="${historia.tagsCsv}" data-autosave-campo="tags" maxlength="500"></div>
         <div class="campo">
             <label>Conteúdo</label>
-            <div data-editor data-menciona-url="/personagens/api/busca">
-                <div class="editor-barra" role="toolbar" aria-label="Formatação">
-                    <button data-cmd="bold" title="Negrito (Ctrl+B)"><b>B</b></button>
-                    <button data-cmd="italic" title="Itálico (Ctrl+I)"><i>I</i></button>
-                    <button data-cmd="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
-                    <button data-cmd="formatBlock" data-valor="h1" title="Título 1">H1</button>
-                    <button data-cmd="formatBlock" data-valor="h2" title="Título 2">H2</button>
-                    <button data-cmd="formatBlock" data-valor="p" title="Texto normal">¶</button>
-                    <button data-cmd="insertUnorderedList" title="Lista">•≡</button>
-                    <button data-cmd="insertOrderedList" title="Lista numerada">1≡</button>
-                    <button data-cmd="formatBlock" data-valor="blockquote" title="Citação">❝</button>
-                    <button data-cmd="createLink" title="Link">🔗</button>
-                    <button data-cmd="removeFormat" title="Limpar formatação">✕</button>
-                    <button data-cmd="undo" title="Desfazer">↩</button>
-                    <button data-cmd="redo" title="Refazer">↪</button>
-                    <button data-cmd="insertHorizontalRule" title="Separador">―</button>
-                    <button data-cmd="formatBlock" data-valor="pre" title="Código">{ }</button>
-                </div>
-                <div class="editor-area" data-editor-area contenteditable="true" style="min-height:420px" aria-label="Conteúdo da história"></div>
-                <input type="hidden" name="content" data-editor-hidden data-autosave-campo="content" th:value="${historia.content}">
-                <input type="hidden" name="mencoesJson" data-mencoes-ids value="[]">
-            </div>
+            <div th:replace="~{fragments/editor :: rico('content', ${historia.content}, 'Conteúdo da história', '46vh', '/personagens/api/busca', ${#strings.listJoin(historia.mentions.![character.id], ',')})}"></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn primario" type="submit">Salvar</button>

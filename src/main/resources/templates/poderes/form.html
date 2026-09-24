@@ -4,23 +4,53 @@
 <body>
 <div th:fragment="conteudo">
     <div class="cab">
-        <div><h1 th:text="${poder.id == null ? 'Novo poder' : 'Editar poder'}">Poder</h1></div>
+        <div><h1 th:text="${poder.id == null ? 'Novo poder' : 'Editar poder'}">Poder</h1>
+            <p>Preencha só o que fizer sentido — campos vazios não aparecem na ficha.</p></div>
         <a class="btn fantasma" th:href="${poder.id == null ? '/poderes' : '/poderes/' + poder.id}">← Voltar</a>
     </div>
     <form th:action="${poder.id == null ? '/poderes' : '/poderes/' + poder.id}" method="post">
-        <div class="campo"><label for="name">Nome *</label><input id="name" name="name" type="text" th:value="${poder.name}" maxlength="160" required></div>
+        <div class="campo"><label for="name">Nome *</label>
+            <input id="name" name="name" type="text" th:value="${poder.name}" maxlength="160" required></div>
         <div class="form-linha">
-            <div class="campo"><label for="category">Categoria</label><input id="category" name="category" type="text" th:value="${poder.category}" maxlength="80"></div>
-            <div class="campo"><label for="level">Nível</label><input id="level" name="level" type="text" th:value="${poder.level}" maxlength="40" placeholder="ex.: Iniciante, Lendário, Ômega"></div>
+            <div class="campo"><label for="category">Categoria</label>
+                <input id="category" name="category" type="text" th:value="${poder.category}" maxlength="80"
+                       list="dlCategorias" placeholder="Elemental, Psíquico…" autocomplete="off">
+                <datalist id="dlCategorias">
+                    <option th:each="c : ${sugestoesCategoria}" th:value="${c}"></option>
+                </datalist>
+                <small class="dica">Escolha da lista ou invente a sua.</small></div>
+            <div class="campo"><label for="level">Nível</label>
+                <input id="level" name="level" type="text" th:value="${poder.level}" maxlength="40"
+                       list="dlNiveis" placeholder="Iniciante, Lendário, Ômega…" autocomplete="off">
+                <datalist id="dlNiveis">
+                    <option th:each="n : ${sugestoesNivel}" th:value="${n}"></option>
+                </datalist></div>
         </div>
-        <div class="campo"><label for="description">Descrição</label><textarea id="description" name="description" rows="4" th:text="${poder.description}"></textarea></div>
+        <div class="campo"><label for="description">Descrição</label>
+            <textarea id="description" name="description" rows="4" th:text="${poder.description}"
+                      placeholder="O que o poder faz, como se manifesta, como é percebido…"></textarea></div>
         <div class="form-linha">
-            <div class="campo"><label for="limitations">Limitações</label><textarea id="limitations" name="limitations" rows="3" th:text="${poder.limitations}"></textarea></div>
-            <div class="campo"><label for="weaknesses">Fraquezas</label><textarea id="weaknesses" name="weaknesses" rows="3" th:text="${poder.weaknesses}"></textarea></div>
+            <div class="campo"><label for="limitations">Limitações</label>
+                <textarea id="limitations" name="limitations" rows="3" th:text="${poder.limitations}"
+                          placeholder="Custos, condições, cooldowns…"></textarea></div>
+            <div class="campo"><label for="weaknesses">Fraquezas</label>
+                <textarea id="weaknesses" name="weaknesses" rows="3" th:text="${poder.weaknesses}"
+                          placeholder="O que anula ou explora esse poder…"></textarea></div>
         </div>
-        <div class="campo"><label for="origin">Origem</label><textarea id="origin" name="origin" rows="3" th:text="${poder.origin}"></textarea></div>
-        <div class="campo"><label for="observations">Observações</label><textarea id="observations" name="observations" rows="3" th:text="${poder.observations}"></textarea></div>
-        <button class="btn primario" type="submit">Salvar poder</button>
+        <details class="secao-recolhivel">
+            <summary>Detalhes opcionais <span class="muted">— origem e observações</span></summary>
+            <div class="secao-corpo">
+                <div class="campo"><label for="origin">Origem</label>
+                    <textarea id="origin" name="origin" rows="3" th:text="${poder.origin}"
+                              placeholder="De onde veio: linhagem, pacto, experimento…"></textarea></div>
+                <div class="campo"><label for="observations">Observações</label>
+                    <textarea id="observations" name="observations" rows="3" th:text="${poder.observations}"></textarea></div>
+            </div>
+        </details>
+        <div class="acoes-form">
+            <button class="btn primario" type="submit">Salvar poder</button>
+            <a class="btn fantasma" th:href="${poder.id == null ? '/poderes' : '/poderes/' + poder.id}">Cancelar</a>
+        </div>
     </form>
 </div>
 </body>

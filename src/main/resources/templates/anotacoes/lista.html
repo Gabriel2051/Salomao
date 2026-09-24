@@ -32,8 +32,14 @@
         </a>
     </div>
     <div class="vazio" th:if="${itens.empty}">
-        Nenhuma anotação ainda.
-        <br><a class="btn primario" th:href="@{/anotacoes/nova}">Criar a primeira</a>
+        <div th:if="${q != null and !#strings.isEmpty(q)}">
+            Nenhum resultado para “<span th:text="${q}">q</span>”.
+            <div><a class="btn pequeno" th:href="@{/anotacoes}">Limpar busca</a></div>
+        </div>
+        <div th:unless="${q != null and !#strings.isEmpty(q)}">
+            Nenhuma anotação ainda.
+            <div><a class="btn primario" th:href="@{/anotacoes/nova}">Criar a primeira</a></div>
+        </div>
     </div>
     <div class="paginacao" th:if="${itens.totalPages > 1}">
         <a class="btn pequeno" th:if="${!itens.first}" th:href="@{/anotacoes(pagina=${itens.number - 1}, q=${q}, visao=${visao})}">← Anterior</a>

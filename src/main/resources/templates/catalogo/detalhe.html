@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(titulo=${item.name}, conteudo=~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <div class="cab">
+        <div>
+            <h1><span class="glifo" th:text="${T(com.biblioteca.salomao.web.KindGlyph).of(item.kind)}">❖</span>
+                <span th:text="${item.name}">Item</span></h1>
+            <p>
+                <span class="etiqueta" th:if="${!#strings.isEmpty(item.kind)}" th:text="${item.kind}">tipo</span>
+                <span class="etiqueta" th:if="${!#strings.isEmpty(item.rarity)}" th:text="${item.rarity}">raridade</span>
+                <span class="etiqueta fav" th:if="${item.favorite}">★ favorito</span>
+                <span class="etiqueta arq" th:if="${item.archived}">arquivado</span>
+            </p>
+        </div>
+        <div style="display:flex;gap:8px">
+            <a class="btn" th:href="@{'/catalogo/' + ${item.id} + '/editar'}">Editar</a>
+            <a class="btn fantasma" th:href="@{/catalogo}">← Catálogo</a>
+        </div>
+    </div>
+
+    <p class="lead" th:if="${!#strings.isEmpty(item.summary)}" th:text="${item.summary}">resumo</p>
+
+    <div class="detalhe-grade">
+        <div>
+            <section class="painel" th:if="${!#strings.isEmpty(item.appearance)}">
+                <h2>Aparência</h2>
+                <div class="conteudo-rico" th:utext="${item.appearance}">aparência</div>
+            </section>
+            <section class="painel" th:if="${!#strings.isEmpty(item.effects)}">
+                <h2>O que faz</h2>
+                <div class="conteudo-rico" th:utext="${item.effects}">efeitos</div>
+            </section>
+            <section class="painel" th:if="${!#strings.isEmpty(item.lore)}">
+                <h2>História do item</h2>
+                <div class="conteudo-rico" th:utext="${item.lore}">história</div>
+            </section>
+            <p class="muted" th:if="${#strings.isEmpty(item.appearance) && #strings.isEmpty(item.effects) && #strings.isEmpty(item.lore)}">
+                Item ainda sem detalhes. <a th:href="@{'/catalogo/' + ${item.id} + '/editar'}">Adicionar aparência, efeitos e história</a>.
+            </p>
+        </div>
+        <div>
+            <section class="painel">
+                <h2>Ficha</h2>
+                <dl class="ficha">
+                    <div th:if="${!#strings.isEmpty(item.material)}"><dt>Material</dt><dd th:text="${item.material}">m</dd></div>
+                    <div th:if="${item.owner != null}"><dt>Portador</dt>
+                        <dd><a th:href="@{'/personagens/' + ${item.owner.id}}" th:text="${item.owner.fullName}">p</a></dd></div>
+                    <div><dt>Criado</dt><dd th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy')}">d</dd></div>
+                    <div><dt>Atualizado</dt><dd th:text="${#temporals.format(item.updatedAt, 'dd/MM/yyyy')}">d</dd></div>
+                </dl>
+                <div class="tags" th:if="${!#strings.isEmpty(item.tagsCsv)}" style="margin-top:10px">
+                    <span class="tag" th:each="t : ${#strings.arraySplit(item.tagsCsv, ',')}" th:text="${t}">tag</span>
+                </div>
+            </section>
+            <form th:action="@{'/catalogo/' + ${item.id} + '/excluir'}" method="post"
+                  data-confirmar="Excluir este item do catálogo? Esta ação não pode ser desfeita.">
+                <button class="btn pequeno perigo" type="submit">Excluir item</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

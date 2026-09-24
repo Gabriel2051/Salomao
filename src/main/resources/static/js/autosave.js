@@ -40,11 +40,10 @@
       root.querySelectorAll("[data-autosave-campo]").forEach(function (el) {
         dados[el.getAttribute("data-autosave-campo")] = el.value;
       });
-      // menções do editor de histórias
+      // menções do editor de histórias (CSV no input oculto)
       var m = root.querySelector("[data-mencoes-ids]");
       if (m) {
-        try { dados.mencoes = JSON.parse(m.value || "[]"); }
-        catch (e) { dados.mencoes = []; }
+        dados.mencoes = (m.value || "").split(",").filter(function (x) { return x; });
       }
       return dados;
     }
@@ -61,13 +60,15 @@
       window.salomaoFetch(url, { method: "PUT", body: JSON.stringify(dados) }).then(function (r) {
         salvando = false;
         if (r && r.ok) {
-          ultimoOk = assinatura(coletarDados());
+          // Marca como salvo EXATAMENTE o que foi enviado: se o usuario digitou
+          // durante o voo do PUT, a diferenca sera detectada abaixo e reenviada.
+          ultimoOk = atual;
           var q = r.quando ? new Date(r.quando) : new Date();
           estado("✓ Salvo " + q.toLocaleTimeString("pt-BR"), "salvo");
         } else {
           estado("Não foi possível salvar. Clique para tentar novamente.", "erro", true);
         }
-        if (pendente) { pendente = false; salvar(); }
+        if (pendente || assinatura(coletarDados()) !== ultimoOk) { pendente = false; salvar(); }
       }).catch(function () {
         salvando = false;
         estado("Não foi possível salvar. Clique para tentar novamente.", "erro", true);
